@@ -1,0 +1,42 @@
+# Build
+target/
+build/
+*.class
+*.log
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# Eclipse / STS
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# Env / secrets
+.env
+application.properties
+
+# Optional (keep if needed)
+# !src/main/resources/application.properties

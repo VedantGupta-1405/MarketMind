@@ -1,0 +1,36 @@
+# ml-service/data_loader.py
+
+import yfinance as yf
+
+# Map stockId → ticker
+STOCK_MAP = {
+    1: "AAPL",
+    2: "GOOGL",
+    3: "MSFT",
+    4: "AMZN"
+}
+
+
+def fetch_stock_data(stock_id, start="2015-01-01", end="2024-01-01"):
+
+    # 🔥 Validate stockId
+    if stock_id not in STOCK_MAP:
+        raise ValueError(f"Invalid stock_id: {stock_id}")
+
+    ticker = STOCK_MAP[stock_id]
+
+    try:
+        data = yf.download(ticker, start=start, end=end)
+
+        # 🔥 Check empty data
+        if data.empty:
+            raise ValueError(f"No data found for ticker: {ticker}")
+
+        # Flatten columns if needed
+        if hasattr(data.columns, 'levels'):
+            data.columns = [col[0] for col in data.columns]
+
+        return data
+
+    except Exception as e:
+        raise RuntimeError(f"Error fetching data for {ticker}: {str(e)}")
