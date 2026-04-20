@@ -318,7 +318,6 @@ function showError(show, message = '') {
         elements.errorState.classList.add('hidden');
     }
 }
-
 // Mock
 function generateMockChartData() {
     currentData = [];
@@ -345,7 +344,7 @@ function generateMockChartData() {
         });
     }
 }
-
+//hello mate
 function generateMockPrediction() {
     return {
         prediction: Math.random() > 0.5 ? "UP" : "DOWN",
