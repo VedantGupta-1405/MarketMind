@@ -4,6 +4,7 @@ import com.investment.investment_system.dto.PredictionDTO;
 import com.investment.investment_system.service.PredictionService;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/predictions")
 public class PredictionController {
