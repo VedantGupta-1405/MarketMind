@@ -3,53 +3,45 @@ package com.investment.investment_system.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
+@Entity // maps to DB table
 @Table(name = "decisions")
 public class Decision {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // primary key
 
     private String decision; // BUY / SELL / HOLD
 
-    private double confidence;
+    private double confidence; 
+    // taken from prediction probability
 
-    private String reason; // 🔥 NEW FIELD (important)
+    private String reason; 
+    // explanation string (useful for frontend/debug)
 
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt; 
+    // timestamp
 
     @ManyToOne
     @JoinColumn(name = "stock_id", nullable = false)
-    private Stock stock;
+    private Stock stock; 
+    // FK → which stock this decision is for
 
     public Decision() {}
 
     // ===== GETTERS =====
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
 
-    public String getDecision() {
-        return decision;
-    }
+    public String getDecision() { return decision; }
 
-    public double getConfidence() {
-        return confidence;
-    }
+    public double getConfidence() { return confidence; }
 
-    public String getReason() {
-        return reason;
-    }
+    public String getReason() { return reason; }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
 
-    public Stock getStock() {
-        return stock;
-    }
+    public Stock getStock() { return stock; }
 
     // ===== SETTERS =====
 

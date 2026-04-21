@@ -6,7 +6,7 @@ public class PredictionDTO {
 
     private Long id;
     private String prediction;
-    private double probability;
+    private double probability; // Confidence level of the prediction (0.0 to 1.0)
     private LocalDateTime createdAt;
     private Long stockId;
     private String stockSymbol;
