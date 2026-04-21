@@ -11,11 +11,11 @@ public class Prediction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String prediction;
+    private String prediction; // e.g., "UP", "DOWN", "STABLE"
 
-    private double probability;
+    private double probability; // Confidence level of the prediction (0.0 to 1.0)
 
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt; // Timestamp of when the prediction was made
 
     @ManyToOne
     @JoinColumn(name = "stock_id", nullable = false)

@@ -7,7 +7,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
-@Service
+@Service // Service to interact with the ML model (FastAPI)
 public class MlService {
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -15,9 +15,6 @@ public class MlService {
     private final String PREDICT_URL = "http://localhost:8000/predict";
     private final String SENTIMENT_URL = "http://localhost:8000/sentiment";
 
-    // ========================
-    // GET PREDICTION
-    // ========================
     public PredictionResponseDTO getPrediction(Long stockId) {
 
         try {
@@ -25,9 +22,9 @@ public class MlService {
             request.setStockId(stockId);
 
             return restTemplate.postForObject(
-                    PREDICT_URL,
-                    request,
-                    PredictionResponseDTO.class
+                    PREDICT_URL, // URL of the FastAPI prediction endpoint
+                    request, // Request body containing the stock ID 
+                    PredictionResponseDTO.class  //Expected response type from FastAPI (prediction and probability
             );
 
         } catch (Exception e) {
@@ -56,11 +53,11 @@ public class MlService {
 
             if (response != null && response.containsKey("sentiment")) {
                 return Double.parseDouble(response.get("sentiment").toString());
-            }
+            } // If response is null or doesn't contain sentiment, return neutral sentiment
 
             return 0.0;
 
-        } catch (Exception e) {
+        } catch (Exception e) { // In case of any error, return neutral sentiment
             return 0.0;
         }
     }
