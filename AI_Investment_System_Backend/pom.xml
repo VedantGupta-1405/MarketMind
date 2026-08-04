@@ -15,6 +15,10 @@
         <relativePath/>
     </parent>
 
+<!-- pom.xml (Project Object Model) is the configuration file for a Maven project. 
+It defines the project's metadata, dependencies, Java version, plugins, build configuration, 
+and how Maven should build and manage the project.-->
+
     <groupId>com.investment</groupId>
     <artifactId>investment-system</artifactId>
     <version>0.0.1-SNAPSHOT</version>
