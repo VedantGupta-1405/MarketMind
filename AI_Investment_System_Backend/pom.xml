@@ -8,6 +8,8 @@
 
     <modelVersion>4.0.0</modelVersion> <!--Specifies the version of the POM model being used.-->
 
+<!-- The parent element specifies the parent POM from which this project inherits configuration.-->
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
