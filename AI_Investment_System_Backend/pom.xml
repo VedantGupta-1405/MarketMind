@@ -113,7 +113,8 @@ and sensible build defaults. This lets us avoid manually configuring versions an
 
                         <path>
                             <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId> <!--Specifies the Lombok dependency as an annotation processor, allowing Lombok annotations to be processed during compilation.-->
+                            <artifactId>lombok</artifactId> <!--Specifies the Lombok dependency as an annotation processor, 
+                                                            allowing Lombok annotations to be processed during compilation.-->
                         </path>
 
                     </annotationProcessorPaths>
@@ -125,11 +126,11 @@ and sensible build defaults. This lets us avoid manually configuring versions an
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
 
-                <configuration>
+                <configuration> <!--Specifies the Spring Boot Maven Plugin, which provides support for packaging and running Spring Boot applications.-->
                     <excludes>
 
                         <exclude>
-                            <groupId>org.projectlombok</groupId>
+                            <groupId>org.projectlombok</groupId> <!--Specifies the Lombok dependency to be excluded from the final packaged application.-->
                             <artifactId>lombok</artifactId>
                         </exclude>
 
