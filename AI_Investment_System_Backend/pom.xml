@@ -78,6 +78,9 @@ and sensible build defaults. This lets us avoid manually configuring versions an
             <scope>runtime</scope>
         </dependency>
 
+<!-- The postgresql dependency provides the PostgreSQL JDBC driver, allowing the application to connect to a PostgreSQL database. 
+             The scope is set to "runtime" because it is only needed at runtime and not during compilation.-->
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
