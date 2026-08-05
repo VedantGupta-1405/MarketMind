@@ -22,8 +22,8 @@ It defines the project's metadata, dependencies, Java version, plugins, build co
 and how Maven should build and manage the project.-->
 
     <groupId>com.investment</groupId> <!--Specifies the group or organization that the project belongs to.-->
-    <artifactId>investment-system</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>investment-system</artifactId> <!--Specifies the unique identifier for the project within the group.-->
+    <version>0.0.1-SNAPSHOT</version> <!--Specifies the version of the project. The "SNAPSHOT" suffix indicates that this is a development version.-->
 
     <name/>
     <description/>
