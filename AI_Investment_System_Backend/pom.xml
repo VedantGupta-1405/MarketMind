@@ -113,7 +113,7 @@ and sensible build defaults. This lets us avoid manually configuring versions an
 
                         <path>
                             <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
+                            <artifactId>lombok</artifactId> <!--Specifies the Lombok dependency as an annotation processor, allowing Lombok annotations to be processed during compilation.-->
                         </path>
 
                     </annotationProcessorPaths>
