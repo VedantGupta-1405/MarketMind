@@ -14,7 +14,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.5.13</version>
-        <relativePath/>
+        <relativePath/> <!--Specifies the relative path to the parent POM. An empty value indicates that Maven should look for the parent POM in the local repository or remote repositories.-->
     </parent>
 
 <!-- pom.xml (Project Object Model) is the configuration file for a Maven project. 
