@@ -96,6 +96,8 @@ and sensible build defaults. This lets us avoid manually configuring versions an
             <scope>test</scope>
         </dependency>
 
+<!-- The spring-boot-starter-test dependency provides support for testing Spring Boot applications, including JUnit and Mockito. -->
+
     </dependencies>
 
     <build>
