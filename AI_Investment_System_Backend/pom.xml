@@ -105,7 +105,7 @@ and sensible build defaults. This lets us avoid manually configuring versions an
         <plugins>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
+                <groupId>org.apache.maven.plugins</groupId> <!--Specifies the Maven Compiler Plugin, which is responsible for compiling the project's source code.-->
                 <artifactId>maven-compiler-plugin</artifactId>
 
                 <configuration>
