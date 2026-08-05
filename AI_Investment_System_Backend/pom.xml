@@ -87,6 +87,9 @@ and sensible build defaults. This lets us avoid manually configuring versions an
             <optional>true</optional>
         </dependency>
 
+<!-- The lombok dependency provides annotations that reduce boilerplate code in Java classes, such as getters, setters, and constructors. 
+             It is marked as optional because it is not required for the application to run, but it can be used during development.-->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
