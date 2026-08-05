@@ -100,7 +100,7 @@ and sensible build defaults. This lets us avoid manually configuring versions an
 
     </dependencies>
 
-    <build>
+    <build> <!--Specifies the build configuration for the project, including plugins and their configurations.-->
 
         <plugins>
 
