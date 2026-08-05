@@ -53,7 +53,8 @@ and sensible build defaults. This lets us avoid manually configuring versions an
         <java.version>17</java.version> <!--Specifies the Java version to be used for compiling the project.-->
     </properties>
 
-    <dependencies>
+    <dependencies> <!--Specifies the dependencies required for the project.
+                     Dependencies are external libraries or modules that the project relies on.-->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
