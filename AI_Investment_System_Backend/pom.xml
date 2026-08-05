@@ -25,6 +25,9 @@ and how Maven should build and manage the project.-->
     <artifactId>investment-system</artifactId> <!--Specifies the unique identifier for the project within the group.-->
     <version>0.0.1-SNAPSHOT</version> <!--Specifies the version of the project. The "SNAPSHOT" suffix indicates that this is a development version.-->
 
+<!-- We use spring-boot-starter-parent because it provides dependency version management, plugin management, 
+and sensible build defaults. This lets us avoid manually configuring versions and build settings.-->
+
     <name/>
     <description/>
     <url/>
