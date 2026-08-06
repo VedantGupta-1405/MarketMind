@@ -1,7 +1,9 @@
-package com.investment.investment_system;
+package com.investment.investment_system; // Investment System Application
 
-import org.springframework.boot.SpringApplication;
+import org.springframework.boot.SpringApplication; // Spring Boot Application
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+//imports are used for starting the Spring Boot application and enabling auto-configuration.
 
 @SpringBootApplication 
 
