@@ -15,3 +15,53 @@ public class InvestmentSystemApplication {
 	}
 
 }
+
+// JVM Starts
+
+// ↓
+
+// main()
+
+// ↓
+
+// SpringApplication.run()
+
+// ↓
+
+// Read Configuration
+
+// ↓
+
+// Auto Configuration
+
+// ↓
+
+// Component Scan
+
+// ↓
+
+// Create Beans
+
+// ↓
+
+// Connect PostgreSQL
+
+// ↓
+
+// Initialize Hibernate
+
+// ↓
+
+// Register Controllers
+
+// ↓
+
+// Start Tomcat
+
+// ↓
+
+// Application Ready
+
+// ↓
+
+// Waiting for HTTP Requests
