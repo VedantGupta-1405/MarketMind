@@ -5,7 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 //imports are used for starting the Spring Boot application and enabling auto-configuration.
 
-@SpringBootApplication 
+@SpringBootApplication // This annotation indicates that this is a Spring Boot application and enables auto-configuration, 
+					   // component scanning, and configuration properties support.
 
 public class InvestmentSystemApplication {
 
