@@ -26,8 +26,6 @@ public class PriceHistory {
 
     public PriceHistory() {}
 
-    // 🔹 Getters
-
     public Long getId() {
         return id;
     }
@@ -59,9 +57,7 @@ public class PriceHistory {
     public Stock getStock() {
         return stock;
     }
-
-    // 🔹 Setters
-
+    
     public void setDate(LocalDate date) {
         this.date = date;
     }
