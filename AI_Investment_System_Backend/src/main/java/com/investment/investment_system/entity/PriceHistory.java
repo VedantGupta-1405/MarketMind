@@ -1,5 +1,7 @@
 package com.investment.investment_system.entity;
 
+//This entity stores the historical market data of a stock.
+
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -57,7 +59,7 @@ public class PriceHistory {
     public Stock getStock() {
         return stock;
     }
-    
+
     public void setDate(LocalDate date) {
         this.date = date;
     }
