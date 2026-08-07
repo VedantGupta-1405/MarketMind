@@ -24,7 +24,8 @@ public class Stock {
 
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true) //The @Column annotation is used to specify the properties of the column in the database table. 
+                                             //In this case, it indicates that the symbol column cannot be null and must be unique across all records in the stocks table.
     private String symbol;
 
     private Double price;
