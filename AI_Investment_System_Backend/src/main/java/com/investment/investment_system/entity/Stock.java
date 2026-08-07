@@ -11,6 +11,9 @@ import java.util.List;
 @Table(name = "stocks", uniqueConstraints = {
         @UniqueConstraint(columnNames = "symbol")
 })
+
+//The @Table annotation specifies the name of the database table to which this entity will be mapped.
+
 public class Stock {
 
     @Id
