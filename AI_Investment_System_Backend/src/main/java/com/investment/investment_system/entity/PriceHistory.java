@@ -24,8 +24,8 @@ public class PriceHistory {
 
     private Long volume;
 
-    @ManyToOne
-    @JoinColumn(name = "stock_id", nullable = false)
+    @ManyToOne //multiple price history records can be associated with a single stock
+    @JoinColumn(name = "stock_id", nullable = false) //specifies the foreign key column in the price_history table that references the primary key of the stocks table.
     private Stock stock;
 
     public PriceHistory() {}
