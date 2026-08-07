@@ -6,7 +6,8 @@ import jakarta.persistence.*; //Everything related to JPA (Java Persistence API)
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Entity
+@Entity //This tells JPA that this class is an entity and should be mapped to a database table
+
 @Table(name = "stocks", uniqueConstraints = {
         @UniqueConstraint(columnNames = "symbol")
 })
