@@ -24,7 +24,6 @@ public class Stock {
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // 🔥 RELATIONSHIPS (ignore to prevent infinite recursion)
 
     @JsonIgnore
     @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL)
@@ -43,8 +42,6 @@ public class Stock {
     private List<Decision> decisions;
 
     public Stock() {}
-
-    // 🔹 Getters
 
     public Long getId() {
         return id;
@@ -81,8 +78,6 @@ public class Stock {
     public List<Decision> getDecisions() {
         return decisions;
     }
-
-    // 🔹 Setters
 
     public void setName(String name) {
         this.name = name;
