@@ -20,6 +20,8 @@ public class PriceHistory {
     private double high;
     private double low;
 
+    //standard stock market data fields
+
     private Long volume;
 
     @ManyToOne
