@@ -9,7 +9,7 @@ import java.util.List;
 @Entity //This tells JPA that this class is an entity and should be mapped to a database table
 
 @Table(name = "stocks", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "symbol")
+        @UniqueConstraint(columnNames = "symbol") //No two stocks can have the same symbol
 })
 
 //The @Table annotation specifies the name of the database table to which this entity will be mapped.
