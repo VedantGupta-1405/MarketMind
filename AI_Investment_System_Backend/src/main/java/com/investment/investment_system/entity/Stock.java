@@ -1,6 +1,6 @@
 package com.investment.investment_system.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnore; //Used during JSON serialization
 import jakarta.persistence.*; //Everything related to JPA (Java Persistence API) is imported from the jakarta.persistence package, 
                               //which is used for mapping Java objects to database tables and managing persistence.
 import java.time.LocalDateTime;
