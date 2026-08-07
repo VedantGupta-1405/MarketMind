@@ -1,5 +1,7 @@
 package com.investment.investment_system.entity;
 
+//A portfolio represents how many shares of a stock are currently owned.
+
 import jakarta.persistence.*;
 
 @Entity
