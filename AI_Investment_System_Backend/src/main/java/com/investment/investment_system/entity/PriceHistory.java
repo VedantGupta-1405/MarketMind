@@ -62,6 +62,8 @@ public class PriceHistory {
         return stock;
     }
 
+    //getters for all the fields in the PriceHistory entity.
+
     public void setDate(LocalDate date) {
         this.date = date;
     }
@@ -89,4 +91,7 @@ public class PriceHistory {
     public void setStock(Stock stock) {
         this.stock = stock;
     }
+
+    //setters for all the fields in the PriceHistory entity.
+
 }
