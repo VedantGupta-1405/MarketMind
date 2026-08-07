@@ -6,14 +6,14 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "price_history")
+@Table(name = "price_history") //maps this entity to the price_history table in the database
 public class PriceHistory {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //geenerates ID automatically for each new record
     private Long id;
 
-    private LocalDate date;
+    private LocalDate date; //we care only about the date, not the time, for historical stock prices
 
     private double openPrice;
     private double closePrice;
