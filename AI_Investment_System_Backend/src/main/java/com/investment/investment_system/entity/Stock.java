@@ -20,6 +20,8 @@ public class Stock {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // The @Id annotation indicates that this field is the primary key of the entity and Every table needs a primary key
+
     private String name;
 
     @Column(nullable = false, unique = true)
