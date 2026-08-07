@@ -53,6 +53,8 @@ public class Stock {
 
     public Stock() {}
 
+    // Default constructor required by JPA
+
     public Long getId() {
         return id;
     }
@@ -89,6 +91,8 @@ public class Stock {
         return decisions;
     }
 
+    // Getters for all the fields in the Stock entity. These methods allow other parts of the application to access the values of the fields.
+
     public void setName(String name) {
         this.name = name;
     }
@@ -116,4 +120,7 @@ public class Stock {
     public void setDecisions(List<Decision> decisions) {
         this.decisions = decisions;
     }
+    
+    // Setters for all the fields in the Stock entity. These methods allow other parts of the application to modify the values of the fields.
+
 }
