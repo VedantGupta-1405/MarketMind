@@ -34,7 +34,7 @@ public class Stock {
 
 
     @JsonIgnore
-    @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL) //The @OneToMany annotation indicates a one-to-many relationship between the Stock entity and the PriceHistory entity. 
     private List<PriceHistory> priceHistoryList;
 
     @JsonIgnore
