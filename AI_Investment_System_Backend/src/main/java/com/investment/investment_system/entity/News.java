@@ -24,8 +24,6 @@ public class News {
 
     public News() {}
 
-    // 🔹 Getters
-
     public Long getId() {
         return id;
     }
@@ -45,8 +43,6 @@ public class News {
     public Stock getStock() {
         return stock;
     }
-
-    // 🔹 Setters
 
     public void setTitle(String title) {
         this.title = title;
