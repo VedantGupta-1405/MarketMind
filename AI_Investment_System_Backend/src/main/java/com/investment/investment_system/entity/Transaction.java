@@ -12,7 +12,7 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-incrementing primary key
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY) //Lazy fetching to avoid loading the stock entity unless it's explicitly accessed
     @JoinColumn(name = "stock_id", nullable = false)
     @JsonIgnore
     private Stock stock;
