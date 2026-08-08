@@ -20,7 +20,7 @@ public class Transaction {
     //Many transactions can belong to one stock, but each transaction is associated with only one stock. 
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false) // Store the enum as a string in the database
     private TransactionType type;
 
     @Column(nullable = false)
