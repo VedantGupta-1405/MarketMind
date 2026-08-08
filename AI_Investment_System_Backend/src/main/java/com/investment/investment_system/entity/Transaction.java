@@ -42,6 +42,8 @@ public class Transaction {
         this.timestamp = LocalDateTime.now();
     }
 
+    // Getters and Setters
+
     public Long getId() { return id; }
 
     public Stock getStock() { return stock; }
