@@ -20,10 +20,11 @@ public class Portfolio {
     private Stock stock;
 
     @Column(nullable = false)
-    private int quantity;
+    private int quantity; // The number of shares of the associated stock that are currently owned in the portfolio.
 
     @Column(nullable = false)
-    private double averagePrice;
+    private double averagePrice; // The average price at which the shares of the associated stock were purchased. 
+                                 // It represents the cost basis for the shares owned in the portfolio.
 
     public Portfolio() {}
 
