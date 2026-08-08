@@ -14,6 +14,9 @@ public class Portfolio {
 
     @ManyToOne(fetch = FetchType.LAZY) // Fetch the associated Stock entity lazily and it also delays the portfolio entry if the associated stock is deleted.
     @JoinColumn(name = "stock_id", nullable = false)
+
+    // The stock associated with this portfolio entry. It represents the stock that is currently owned in the portfolio.
+
     private Stock stock;
 
     @Column(nullable = false)
