@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 public class Prediction {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-incrementing primary key
     private Long id;
 
     private String prediction; 
@@ -18,10 +18,12 @@ public class Prediction {
     private LocalDateTime createdAt; 
 
     @ManyToOne
-    @JoinColumn(name = "stock_id", nullable = false)
+    @JoinColumn(name = "stock_id", nullable = false) // Foreign key to the Stock entity
     private Stock stock;
 
     public Prediction() {}
+
+    // Constructor to initialize a new Prediction object with the given parameters
 
     public Long getId() {
         return id;
@@ -42,6 +44,8 @@ public class Prediction {
     public Stock getStock() {
         return stock;
     }
+
+    // Setters for the Prediction entity fields
 
     public void setPrediction(String prediction) {
         this.prediction = prediction;
