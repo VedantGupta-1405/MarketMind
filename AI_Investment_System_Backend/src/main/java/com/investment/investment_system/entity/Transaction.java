@@ -17,6 +17,8 @@ public class Transaction {
     @JsonIgnore
     private Stock stock;
 
+    //Many transactions can belong to one stock, but each transaction is associated with only one stock. 
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TransactionType type;
