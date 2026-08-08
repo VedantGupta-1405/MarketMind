@@ -12,7 +12,7 @@ public class Portfolio {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY) // Fetch the associated Stock entity lazily
     @JoinColumn(name = "stock_id", nullable = false)
     private Stock stock;
 
