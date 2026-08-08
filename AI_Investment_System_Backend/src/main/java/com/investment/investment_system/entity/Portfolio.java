@@ -34,6 +34,8 @@ public class Portfolio {
         this.averagePrice = averagePrice;
     }
 
+    // Getters and Setters
+
     public Long getId() { return id; }
 
     public Stock getStock() { return stock; }
