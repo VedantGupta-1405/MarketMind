@@ -24,13 +24,13 @@ public class Transaction {
     private TransactionType type;
 
     @Column(nullable = false)
-    private int quantity;
+    private int quantity; // The number of shares involved in the transaction. It represents how many shares were bought or sold in this transaction.
 
     @Column(nullable = false)
-    private double price;
+    private double price; // The price at which the transaction occurred. It represents the price per share for the transaction.
 
     @Column(nullable = false)
-    private LocalDateTime timestamp;
+    private LocalDateTime timestamp; // The timestamp when the transaction occurred. It is set to the current date and time when a new transaction is created.
 
     public Transaction() {}
 
