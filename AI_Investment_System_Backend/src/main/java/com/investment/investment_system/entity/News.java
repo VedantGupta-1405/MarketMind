@@ -24,7 +24,7 @@ public class News {
     @JoinColumn(name = "stock_id", nullable = false)
     private Stock stock;
 
-    //
+    //Many news articles can belong to one stock.
 
     public News() {}
 
