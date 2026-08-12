@@ -10,7 +10,7 @@ import jakarta.persistence.*;
 public class Sentiment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Standard database-generated primary key
     private Long id;
 
     private double score;
