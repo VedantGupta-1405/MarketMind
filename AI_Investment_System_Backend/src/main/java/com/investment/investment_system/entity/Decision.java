@@ -13,8 +13,8 @@ public class Decision {
 
     private String decision; // Represents the decision made (e.g., "buy", "sell", "hold")
 
-    private double confidence; 
-    private String reason; 
+    private double confidence; // Represents the confidence level of the decision, typically a value between 0 and 1
+    private String reason; // Provides a textual explanation or rationale for the decision made
 
     private LocalDateTime createdAt; 
 
