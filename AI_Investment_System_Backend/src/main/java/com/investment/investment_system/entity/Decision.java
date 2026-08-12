@@ -18,6 +18,8 @@ public class Decision {
 
     private LocalDateTime createdAt; 
 
+
+
     @ManyToOne
     @JoinColumn(name = "stock_id", nullable = false)
     private Stock stock; 
