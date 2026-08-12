@@ -14,12 +14,12 @@ public class Decision {
     private String decision; // Represents the decision made (e.g., "buy", "sell", "hold")
 
     private double confidence; // Represents the confidence level of the decision, typically a value between 0 and 1
-    private String reason; // Provides a textual explanation or rationale for the decision made
+    private String reason; // Provides a textual explanation or rationale for the decision mades
 
     private LocalDateTime createdAt; 
 
     @ManyToOne
-    @JoinColumn(name = "stock_id", nullable = false)
+    @JoinColumn(name = "stock_id", nullable = false) // Many decisions can be associated with one stock.
     private Stock stock; 
 
     public Decision() {}
