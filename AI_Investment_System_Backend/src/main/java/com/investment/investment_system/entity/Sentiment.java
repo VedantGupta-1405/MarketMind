@@ -1,5 +1,8 @@
 package com.investment.investment_system.entity;
 
+//A sentiment entity that represents the sentiment score associated with a news article. 
+// It has a one-to-one relationship with the News entity.
+
 import jakarta.persistence.*;
 
 @Entity
