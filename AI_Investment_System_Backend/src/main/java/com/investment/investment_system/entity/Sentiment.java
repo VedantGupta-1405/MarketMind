@@ -16,7 +16,7 @@ public class Sentiment {
     private double score;
 
     @OneToOne
-    @JoinColumn(name = "news_id", nullable = false)
+    @JoinColumn(name = "news_id", nullable = false) //one sentiment is associated with one news article
     private News news;
 
     public Sentiment() {}
