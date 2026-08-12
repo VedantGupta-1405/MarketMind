@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 public class Decision {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Standard database-generated primary key
     private Long id;
 
     private String decision; 
