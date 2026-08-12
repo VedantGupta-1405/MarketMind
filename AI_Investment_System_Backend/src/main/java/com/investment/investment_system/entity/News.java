@@ -11,6 +11,8 @@ public class News {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    //Standard database-generated primary key
+
     private String title;
 
     @Column(columnDefinition = "TEXT")
