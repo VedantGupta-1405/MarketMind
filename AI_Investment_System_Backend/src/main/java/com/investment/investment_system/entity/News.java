@@ -15,14 +15,16 @@ public class News {
 
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT") // Specifies that the content column should be of type TEXT in the database
     private String content;
 
-    private LocalDateTime publishedAt;
+    private LocalDateTime publishedAt; // Represents the date and time when the news was published
 
     @ManyToOne
     @JoinColumn(name = "stock_id", nullable = false)
     private Stock stock;
+
+    //
 
     public News() {}
 
