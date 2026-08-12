@@ -6,7 +6,7 @@ package com.investment.investment_system.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "sentiment")
+@Table(name = "sentiment") //maps to the "sentiment" table in the database
 public class Sentiment {
 
     @Id
