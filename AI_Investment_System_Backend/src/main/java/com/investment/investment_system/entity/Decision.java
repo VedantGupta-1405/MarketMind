@@ -11,14 +11,12 @@ public class Decision {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Standard database-generated primary key
     private Long id;
 
-    private String decision; 
+    private String decision; // Represents the decision made (e.g., "buy", "sell", "hold")
 
     private double confidence; 
     private String reason; 
 
     private LocalDateTime createdAt; 
-
-
 
     @ManyToOne
     @JoinColumn(name = "stock_id", nullable = false)
