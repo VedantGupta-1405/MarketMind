@@ -16,7 +16,6 @@ public class PortfolioService {
         this.portfolioRepository = portfolioRepository;
     }
 
-    // 🔥 Get all portfolios (API use-case)
     public List<PortfolioDTO> getAllPortfolios() {
         List<Portfolio> portfolios = portfolioRepository.findAll();
 
@@ -25,7 +24,6 @@ public class PortfolioService {
                 .toList();
     }
 
-    // 🔥 Mapping (VERY IMPORTANT SKILL)
     private PortfolioDTO convertToDTO(Portfolio portfolio) {
 
         double currentPrice = portfolio.getStock().getPrice();
