@@ -12,4 +12,6 @@ public interface NewsRepository extends JpaRepository<News, Long> {
     Optional<News> findTopByStockIdOrderByIdDesc(Long stockId);
 
     List<News> findByStock(Stock stock);
+
+    boolean existsByUrl(String url);
 }
