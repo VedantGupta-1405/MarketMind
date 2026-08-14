@@ -19,7 +19,6 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
 
-    // 🔥 BUY
     @PostMapping("/buy")
     public ResponseEntity<Map<String, String>> buyStock(@RequestBody TransactionRequestDTO request) {
 
@@ -32,7 +31,6 @@ public class TransactionController {
         return ResponseEntity.ok(Map.of("message", "Stock bought successfully"));
     }
 
-    // 🔥 SELL
     @PostMapping("/sell")
     public ResponseEntity<Map<String, String>> sellStock(@RequestBody TransactionRequestDTO request) {
 
@@ -45,7 +43,6 @@ public class TransactionController {
         return ResponseEntity.ok(Map.of("message", "Stock sold successfully"));
     }
 
-    // 🔥 GET ALL TRANSACTIONS (clean architecture)
     @GetMapping
     public ResponseEntity<List<TransactionDTO>> getAllTransactions() {
         return ResponseEntity.ok(transactionService.getAllTransactions());
