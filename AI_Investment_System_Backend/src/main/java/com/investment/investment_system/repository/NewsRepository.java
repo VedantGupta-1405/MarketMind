@@ -9,9 +9,7 @@ import java.util.Optional;
 
 public interface NewsRepository extends JpaRepository<News, Long> {
 
-    // 🔥 Get latest news for a stock
     Optional<News> findTopByStockIdOrderByIdDesc(Long stockId);
 
-    // 🔥 Get all news for a stock
     List<News> findByStock(Stock stock);
 }
