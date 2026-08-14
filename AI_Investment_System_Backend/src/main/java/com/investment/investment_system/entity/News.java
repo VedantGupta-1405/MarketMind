@@ -4,27 +4,27 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "news") // Defines the database table for this entity
+@Table(name = "news", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "url")
+})
 public class News {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //Standard database-generated primary key
-
     private String title;
 
-    @Column(columnDefinition = "TEXT") // Specifies that the content column should be of type TEXT in the database
+    @Column(columnDefinition = "TEXT")
     private String content;
 
-    private LocalDateTime publishedAt; // Represents the date and time when the news was published
+    private String url;
+
+    private LocalDateTime publishedAt;
 
     @ManyToOne
     @JoinColumn(name = "stock_id", nullable = false)
     private Stock stock;
-
-    //Many news articles can belong to one stock.
 
     public News() {}
 
@@ -38,6 +38,10 @@ public class News {
 
     public String getContent() {
         return content;
+    }
+
+    public String getUrl() {
+        return url;
     }
 
     public LocalDateTime getPublishedAt() {
@@ -54,6 +58,10 @@ public class News {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public void setPublishedAt(LocalDateTime publishedAt) {
