@@ -25,7 +25,6 @@ public class TransactionService {
         this.portfolioRepository = portfolioRepository;
     }
 
-    // 🔥 BUY STOCK
     @Transactional
     public void buyStock(Long stockId, int quantity, double price) {
 
@@ -65,7 +64,6 @@ public class TransactionService {
         transactionRepository.save(transaction);
     }
 
-    // 🔥 SELL STOCK
     @Transactional
     public void sellStock(Long stockId, int quantity, double price) {
 
@@ -102,7 +100,6 @@ public class TransactionService {
         transactionRepository.save(transaction);
     }
 
-    // 🔥 GET ALL TRANSACTIONS (moved from controller → correct architecture)
     public List<TransactionDTO> getAllTransactions() {
         return transactionRepository.findAllByOrderByTimestampDesc()
                 .stream()
