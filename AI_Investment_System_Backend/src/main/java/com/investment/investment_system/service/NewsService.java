@@ -31,6 +31,15 @@ public class NewsService {
         return newsRepository.save(news);
     }
 
+    public News saveScrapedNews(News news) {
+
+        if (newsRepository.existsByUrl(news.getUrl())) {
+            return null;
+        }
+
+        return newsRepository.save(news);
+    }
+
     public List<News> getNews(Long stockId) {
 
         Stock stock = stockRepository.findById(stockId)
