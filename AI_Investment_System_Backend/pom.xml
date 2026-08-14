@@ -1,5 +1,4 @@
-```xml
-<?xml version="1.0" encoding="UTF-8"?>             <!--XML declaration specifying the version and encoding of the XML document.-->
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!-- Project and this is the root element -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" 
@@ -144,4 +143,3 @@ and sensible build defaults. This lets us avoid manually configuring versions an
     </build>
 
 </project>
-```
