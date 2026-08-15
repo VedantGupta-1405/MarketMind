@@ -43,11 +43,18 @@ public class MlService {
         }
     }
 
-    public double getSentiment(Long stockId) {
+    public double getSentiment(
+            Long stockId,
+            String newsTitle,
+            String newsContent
+    ) {
 
         try {
             PredictionRequestDTO request = new PredictionRequestDTO();
+
             request.setStockId(stockId);
+            request.setNewsTitle(newsTitle);
+            request.setNewsContent(newsContent);
 
             Map<String, Object> response = restTemplate.postForObject(
                     SENTIMENT_URL,
