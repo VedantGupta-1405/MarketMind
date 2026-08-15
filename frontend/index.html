@@ -5,22 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MarketMind - Fintech AI Prediction</title>
     <meta name="description" content="Premium AI-powered stock prediction and analysis platform.">
-    <!-- Fonts -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Teko:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- TradingView Lightweight Charts -->
+
     <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <div class="app-container">
-        <!-- Header / Top Section -->
+
         <header class="top-section">
             <div class="logo">
                 <span class="logo-icon">▲</span>
                 <h1>MarketMind</h1>
             </div>
+
             <div class="controls">
                 <div class="custom-select">
                     <select id="stockSelector">
@@ -30,6 +33,7 @@
                         <option value="AMZN">AMZN - Amazon.com Inc.</option>
                     </select>
                 </div>
+
                 <button id="analyzeBtn" class="btn-primary">
                     <span class="btn-text">Analyze / Predict</span>
                     <span class="btn-loader hidden"></span>
@@ -37,15 +41,16 @@
             </div>
         </header>
 
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Middle Section: Cards -->
+
             <section class="cards-section">
-                <!-- Prediction Card -->
+
                 <div class="card prediction-card" id="predictionCard">
                     <div class="card-header">Prediction</div>
+
                     <div class="card-body">
                         <div class="prediction-value" id="predValue">--</div>
+
                         <div class="prediction-meta">
                             <span class="confidence" id="predConfidence">--%</span>
                             <span class="timestamp" id="predTimestamp">--:--</span>
@@ -53,67 +58,97 @@
                     </div>
                 </div>
 
-                <!-- Decision Card (Centerpiece) -->
                 <div class="card decision-card" id="decisionCard">
                     <div class="card-header">Action Recommended</div>
+
                     <div class="card-body">
                         <div class="decision-value" id="decisionValue">HOLD</div>
+
                         <div class="decision-meta">
                             <span class="confidence" id="decisionConfidence">--% Confidence</span>
                         </div>
+
                         <div class="decision-reason" id="decisionReason">
                             Awaiting analysis...
                         </div>
                     </div>
                 </div>
 
-                <!-- Sentiment Indicator -->
                 <div class="card sentiment-card" id="sentimentCard">
                     <div class="card-header">Market Sentiment</div>
+
                     <div class="card-body">
                         <div class="sentiment-score" id="sentimentScore">--</div>
+
                         <div class="sentiment-gauge">
-                            <div class="gauge-fill" id="gaugeFill" style="width: 50%;"></div>
+                            <div class="gauge-fill" id="gaugeFill"></div>
                             <div class="gauge-marker"></div>
                         </div>
+
                         <div class="sentiment-label" id="sentimentLabel">Neutral</div>
                     </div>
                 </div>
+
             </section>
 
-            <!-- Error State -->
             <div id="errorState" class="error-banner hidden">
                 <span class="error-icon">⚠️</span>
                 <span id="errorMessage">An error occurred while fetching data.</span>
             </div>
 
-            <!-- Bottom Section: Charts & History -->
+            <section class="news-section">
+
+                <div class="news-header">
+                    <div>
+                        <h2>Latest Market News</h2>
+                        <span class="news-subtitle">Live news collected from market sources</span>
+                    </div>
+
+                    <button id="refreshNewsBtn" class="news-refresh-btn">
+                        Refresh
+                    </button>
+                </div>
+
+                <div id="newsContainer" class="news-container">
+                    <div class="news-loading">
+                        Loading latest news...
+                    </div>
+                </div>
+
+            </section>
+
             <section class="bottom-section">
-                <!-- Primary Chart -->
+
                 <div class="chart-container">
+
                     <div class="chart-header">
                         <h2>Price Action</h2>
+
                         <div class="chart-controls">
                             <button class="chart-btn active" data-type="line">Line</button>
                             <button class="chart-btn" data-type="area">Area</button>
                             <button class="chart-btn" data-type="candlestick">Candle</button>
                         </div>
                     </div>
+
                     <div id="priceChart" class="tv-chart"></div>
-                    
-                    <!-- Loading State for Chart -->
+
                     <div id="chartLoader" class="overlay-loader hidden">
                         <div class="spinner"></div>
                     </div>
+
                 </div>
 
-                <!-- History Table -->
                 <div class="history-container">
+
                     <div class="history-header">
                         <h2>Prediction History</h2>
                     </div>
+
                     <div class="table-wrapper">
+
                         <table id="historyTable">
+
                             <thead>
                                 <tr>
                                     <th>Time</th>
@@ -123,17 +158,26 @@
                                     <th>Reason</th>
                                 </tr>
                             </thead>
+
                             <tbody id="historyBody">
-                                <!-- Rows inserted via JS -->
-                                <tr class="empty-row"><td colspan="5">No history available</td></tr>
+                                <tr class="empty-row">
+                                    <td colspan="5">No history available</td>
+                                </tr>
                             </tbody>
+
                         </table>
+
                     </div>
+
                 </div>
+
             </section>
+
         </main>
+
     </div>
 
     <script src="app.js" defer></script>
+
 </body>
 </html>
