@@ -1,67 +1,14 @@
-package com.investment.investment_system; // Investment System Application
+package com.investment.investment_system;
 
-import org.springframework.boot.SpringApplication; // Spring Boot Application
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
-//imports are used for starting the Spring Boot application and enabling auto-configuration.
-
-@SpringBootApplication // This annotation indicates that this is a Spring Boot application and enables auto-configuration, 
-					   // component scanning, and configuration properties support.
-
+@EnableScheduling
+@SpringBootApplication
 public class InvestmentSystemApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(InvestmentSystemApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(InvestmentSystemApplication.class, args);
+    }
 }
-
-// JVM Starts
-
-// ↓
-
-// main()
-
-// ↓
-
-// SpringApplication.run()
-
-// ↓
-
-// Read Configuration
-
-// ↓
-
-// Auto Configuration
-
-// ↓
-
-// Component Scan
-
-// ↓
-
-// Create Beans
-
-// ↓
-
-// Connect PostgreSQL
-
-// ↓
-
-// Initialize Hibernate
-
-// ↓
-
-// Register Controllers
-
-// ↓
-
-// Start Tomcat
-
-// ↓
-
-// Application Ready
-
-// ↓
-
-// Waiting for HTTP Requests
