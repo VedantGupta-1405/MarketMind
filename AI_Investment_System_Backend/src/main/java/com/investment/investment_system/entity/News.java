@@ -18,6 +18,7 @@ public class News {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @Column(columnDefinition = "TEXT")
     private String url;
 
     private LocalDateTime publishedAt;
