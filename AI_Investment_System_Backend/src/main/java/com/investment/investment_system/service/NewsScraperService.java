@@ -7,6 +7,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -36,6 +37,7 @@ public class NewsScraperService {
         this.newsService = newsService;
     }
 
+    @Scheduled(fixedRate = 60000)
     public void scrapeLatestNews() {
 
         List<Stock> stocks = stockRepository.findAll();
