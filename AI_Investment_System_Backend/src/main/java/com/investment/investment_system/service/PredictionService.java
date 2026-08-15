@@ -2,6 +2,7 @@ package com.investment.investment_system.service;
 
 import com.investment.investment_system.dto.PredictionDTO;
 import com.investment.investment_system.dto.PredictionResponseDTO;
+import com.investment.investment_system.entity.Decision;
 import com.investment.investment_system.entity.News;
 import com.investment.investment_system.entity.Prediction;
 import com.investment.investment_system.entity.Sentiment;
@@ -75,7 +76,8 @@ public class PredictionService {
         prediction.setCreatedAt(LocalDateTime.now());
         prediction.setStock(stock);
 
-        Prediction savedPrediction = predictionRepository.save(prediction);
+        Prediction savedPrediction =
+                predictionRepository.save(prediction);
 
         if (latestNews.isPresent()) {
             Sentiment sentiment = new Sentiment();
@@ -85,15 +87,22 @@ public class PredictionService {
             sentimentRepository.save(sentiment);
         }
 
-        decisionService.generateDecision(savedPrediction);
+        Decision decision =
+                decisionService.generateDecision(savedPrediction);
 
         PredictionDTO dto = new PredictionDTO();
+
         dto.setId(savedPrediction.getId());
         dto.setPrediction(savedPrediction.getPrediction());
         dto.setProbability(savedPrediction.getProbability());
         dto.setCreatedAt(savedPrediction.getCreatedAt());
         dto.setStockId(stock.getId());
         dto.setStockSymbol(stock.getSymbol());
+
+        dto.setDecision(decision.getDecision());
+        dto.setSentiment(sentimentScore);
+        dto.setDecisionConfidence(decision.getConfidence());
+        dto.setReason(decision.getReason());
 
         return dto;
     }
