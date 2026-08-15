@@ -95,6 +95,12 @@ and sensible build defaults. This lets us avoid manually configuring versions an
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.21.2</version>
+        </dependency>
+
 <!-- The spring-boot-starter-test dependency provides support for testing Spring Boot applications, including JUnit and Mockito. -->
 
     </dependencies>
