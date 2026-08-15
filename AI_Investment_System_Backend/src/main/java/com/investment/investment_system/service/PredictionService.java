@@ -62,7 +62,12 @@ public class PredictionService {
                         newsContent
                 );
 
-        double sentimentScore = mlService.getSentiment(stockId);
+        double sentimentScore =
+                mlService.getSentiment(
+                        stockId,
+                        newsTitle,
+                        newsContent
+                );
 
         Prediction prediction = new Prediction();
         prediction.setPrediction(mlResponse.getPrediction());
