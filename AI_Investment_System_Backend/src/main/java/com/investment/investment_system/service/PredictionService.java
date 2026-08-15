@@ -41,17 +41,29 @@ public class PredictionService {
 
     public PredictionDTO createPrediction(Long stockId) {
 
-        // 1. Get stock
         Stock stock = stockRepository.findById(stockId)
                 .orElseThrow(() -> new RuntimeException("Stock not found"));
 
-        // 2. Call ML prediction
-        PredictionResponseDTO mlResponse = mlService.getPrediction(stockId);
+        Optional<News> latestNews =
+                newsRepository.findTopByStockIdOrderByIdDesc(stockId);
 
-        // 3. Call ML sentiment
+        String newsTitle = "";
+        String newsContent = "";
+
+        if (latestNews.isPresent()) {
+            newsTitle = latestNews.get().getTitle();
+            newsContent = latestNews.get().getContent();
+        }
+
+        PredictionResponseDTO mlResponse =
+                mlService.getPrediction(
+                        stockId,
+                        newsTitle,
+                        newsContent
+                );
+
         double sentimentScore = mlService.getSentiment(stockId);
 
-        // 4. Save prediction
         Prediction prediction = new Prediction();
         prediction.setPrediction(mlResponse.getPrediction());
         prediction.setProbability(mlResponse.getProbability());
@@ -59,9 +71,6 @@ public class PredictionService {
         prediction.setStock(stock);
 
         Prediction savedPrediction = predictionRepository.save(prediction);
-
-        // 5. Attach sentiment to latest news (important assumption)
-        Optional<News> latestNews = newsRepository.findTopByStockIdOrderByIdDesc(stockId);
 
         if (latestNews.isPresent()) {
             Sentiment sentiment = new Sentiment();
@@ -71,10 +80,8 @@ public class PredictionService {
             sentimentRepository.save(sentiment);
         }
 
-        // 6. Generate decision (now uses REAL sentiment)
         decisionService.generateDecision(savedPrediction);
 
-        // 7. Convert to DTO
         PredictionDTO dto = new PredictionDTO();
         dto.setId(savedPrediction.getId());
         dto.setPrediction(savedPrediction.getPrediction());
