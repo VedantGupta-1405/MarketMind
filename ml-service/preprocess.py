@@ -1,5 +1,3 @@
-# ml-service/preprocess.py
-
 import numpy as np
 from data_loader import fetch_stock_data
 from sklearn.preprocessing import MinMaxScaler
@@ -19,29 +17,23 @@ def preprocess_data(stock_id, window_size=60):
 
     df = fetch_stock_data(stock_id)
 
-    # 🔥 Validate column
     if 'Close' not in df.columns:
         raise ValueError("Missing 'Close' column in stock data")
 
     data = df[['Close']].copy()
 
-    # 🔥 Handle missing values
     data = data.dropna()
 
-    # 🔥 Ensure enough data
     if len(data) <= window_size:
         raise ValueError(
             f"Not enough data for sequence creation. Required > {window_size}, got {len(data)}"
         )
 
-    # 🔥 Scaling
     scaler = MinMaxScaler(feature_range=(0, 1))
     scaled_data = scaler.fit_transform(data)
 
-    # 🔥 Sequence creation
     X, y = create_sequences(scaled_data, window_size)
 
-    # 🔥 Final validation
     if len(X) == 0 or len(y) == 0:
         raise ValueError("Sequence generation failed — empty dataset")
 
