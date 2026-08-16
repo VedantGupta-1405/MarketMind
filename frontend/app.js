@@ -1,5 +1,4 @@
 const API_BASE_URL = 'http://localhost:8080';
-
 const PREDICTION_COOLDOWN = 15;
 
 const elements = {
@@ -35,6 +34,13 @@ const elements = {
     refreshNewsBtn: document.getElementById('refreshNewsBtn')
 };
 
+const stockIdMap = {
+    AAPL: 1,
+    GOOGL: 4,
+    MSFT: 5,
+    AMZN: 6
+};
+
 let chart = null;
 let series = null;
 let currentChartType = 'line';
@@ -45,22 +51,22 @@ let isCooldown = false;
 let cooldownRemaining = 0;
 let cooldownTimer = null;
 
-const stockIdMap = {
-    AAPL: 1,
-    GOOGL: 4,
-    MSFT: 5,
-    AMZN: 6
-};
-
 initApp();
 
 function initApp() {
+    if (!elements.stockSelector || !elements.analyzeBtn) {
+        console.error('Required frontend elements are missing.');
+        return;
+    }
+
     initChart();
     loadStockData();
     loadNews();
+    updateAnalyzeButton();
 
     elements.stockSelector.addEventListener('change', () => {
         resetCards();
+        showError(false);
         loadStockData();
         loadNews();
     });
@@ -77,60 +83,74 @@ function initApp() {
                 button.classList.remove('active');
             });
 
-            event.target.classList.add('active');
+            event.currentTarget.classList.add('active');
 
-            changeChartType(event.target.dataset.type);
+            changeChartType(
+                event.currentTarget.dataset.type
+            );
         });
     });
 }
 
 function getStockId() {
-    const symbol = elements.stockSelector.value;
-
-    return stockIdMap[symbol] || 1;
+    return stockIdMap[elements.stockSelector.value] || 1;
 }
 
 function initChart() {
-    chart = LightweightCharts.createChart(elements.chartContainer, {
-        width: elements.chartContainer.clientWidth,
-        height: 300,
+    if (
+        !elements.chartContainer ||
+        typeof LightweightCharts === 'undefined'
+    ) {
+        return;
+    }
 
-        layout: {
-            background: {
-                type: 'solid',
-                color: 'transparent'
-            },
-            textColor: '#787B86',
-            fontFamily: "'Inter', sans-serif"
-        },
+    chart = LightweightCharts.createChart(
+        elements.chartContainer,
+        {
+            width: elements.chartContainer.clientWidth,
+            height: 300,
 
-        grid: {
-            vertLines: {
-                color: '#2A2E39'
+            layout: {
+                background: {
+                    type: 'solid',
+                    color: 'transparent'
+                },
+                textColor: '#787B86',
+                fontFamily: "'Inter', sans-serif"
             },
-            horzLines: {
-                color: '#2A2E39'
+
+            grid: {
+                vertLines: {
+                    color: '#2A2E39'
+                },
+                horzLines: {
+                    color: '#2A2E39'
+                }
+            },
+
+            rightPriceScale: {
+                borderVisible: false
+            },
+
+            timeScale: {
+                borderVisible: false,
+                timeVisible: true
+            },
+
+            crosshair: {
+                mode: LightweightCharts.CrosshairMode.Normal
             }
-        },
-
-        rightPriceScale: {
-            borderVisible: false
-        },
-
-        timeScale: {
-            borderVisible: false,
-            timeVisible: true
-        },
-
-        crosshair: {
-            mode: LightweightCharts.CrosshairMode.Normal
         }
-    });
+    );
 
     window.addEventListener('resize', () => {
-        if (elements.chartContainer && chart) {
+        if (
+            chart &&
+            elements.chartContainer
+        ) {
             chart.applyOptions({
-                width: elements.chartContainer.clientWidth
+                width:
+                    elements.chartContainer.clientWidth
             });
         }
     });
@@ -139,6 +159,10 @@ function initChart() {
 }
 
 function changeChartType(type) {
+    if (!chart) {
+        return;
+    }
+
     if (series) {
         chart.removeSeries(series);
     }
@@ -158,12 +182,14 @@ function changeChartType(type) {
             LightweightCharts.AreaSeries,
             {
                 lineColor: '#2962FF',
-                topColor: 'rgba(41, 98, 255, 0.4)',
-                bottomColor: 'rgba(41, 98, 255, 0.0)',
+                topColor:
+                    'rgba(41, 98, 255, 0.4)',
+                bottomColor:
+                    'rgba(41, 98, 255, 0)',
                 lineWidth: 2
             }
         );
-    } else if (type === 'candlestick') {
+    } else {
         series = chart.addSeries(
             LightweightCharts.CandlestickSeries,
             {
@@ -180,7 +206,11 @@ function changeChartType(type) {
 }
 
 function updateChartSeries() {
-    if (!series || currentData.length === 0) {
+    if (
+        !chart ||
+        !series ||
+        currentData.length === 0
+    ) {
         return;
     }
 
@@ -189,19 +219,19 @@ function updateChartSeries() {
         currentChartType === 'area'
     ) {
         series.setData(
-            currentData.map(data => ({
-                time: data.time,
-                value: data.value
+            currentData.map(item => ({
+                time: item.time,
+                value: item.value
             }))
         );
     } else {
         series.setData(
-            currentData.map(data => ({
-                time: data.time,
-                open: data.open,
-                high: data.high,
-                low: data.low,
-                close: data.close
+            currentData.map(item => ({
+                time: item.time,
+                open: item.open,
+                high: item.high,
+                low: item.low,
+                close: item.close
             }))
         );
     }
@@ -213,23 +243,28 @@ async function loadStockData() {
     showError(false);
 
     if (elements.chartLoader) {
-        elements.chartLoader.classList.remove('hidden');
+        elements.chartLoader.classList.remove(
+            'hidden'
+        );
     }
-
-    const stockId = getStockId();
 
     try {
         const response = await fetch(
-            `${API_BASE_URL}/price-history/${stockId}`
+            `${API_BASE_URL}/price-history/${getStockId()}`
         );
 
         if (!response.ok) {
-            throw new Error('API unreachable');
+            throw new Error(
+                `Price history API returned ${response.status}`
+            );
         }
 
         const data = await response.json();
 
-        if (Array.isArray(data) && data.length > 1) {
+        if (
+            Array.isArray(data) &&
+            data.length > 1
+        ) {
             const tempMap = new Map();
 
             data.forEach(item => {
@@ -251,56 +286,93 @@ async function loadStockData() {
                     );
                 }
 
-                if (Number.isNaN(dateObj.getTime())) {
+                if (
+                    Number.isNaN(
+                        dateObj.getTime()
+                    )
+                ) {
                     return;
                 }
 
-                dateObj.setUTCHours(0, 0, 0, 0);
-
-                const timeNum = Math.floor(
-                    dateObj.getTime() / 1000
+                dateObj.setUTCHours(
+                    0,
+                    0,
+                    0,
+                    0
                 );
 
-                const closePrice =
-                    Number(item.closePrice ?? item.close ?? 150);
+                const time =
+                    Math.floor(
+                        dateObj.getTime() /
+                        1000
+                    );
 
-                const openPrice =
-                    Number(item.openPrice ?? item.open ?? closePrice);
+                const close =
+                    Number(
+                        item.closePrice ??
+                        item.close ??
+                        150
+                    );
 
-                const highPrice =
-                    Number(item.highPrice ?? item.high ?? closePrice);
+                const open =
+                    Number(
+                        item.openPrice ??
+                        item.open ??
+                        close
+                    );
 
-                const lowPrice =
-                    Number(item.lowPrice ?? item.low ?? closePrice);
+                const high =
+                    Number(
+                        item.highPrice ??
+                        item.high ??
+                        close
+                    );
 
-                tempMap.set(timeNum, {
-                    time: timeNum,
-                    value: closePrice,
-                    open: openPrice,
-                    high: highPrice,
-                    low: lowPrice,
-                    close: closePrice
-                });
+                const low =
+                    Number(
+                        item.lowPrice ??
+                        item.low ??
+                        close
+                    );
+
+                tempMap.set(
+                    time,
+                    {
+                        time,
+                        value: close,
+                        open,
+                        high,
+                        low,
+                        close
+                    }
+                );
             });
 
-            currentData = Array.from(tempMap.values())
-                .sort((a, b) => a.time - b.time);
+            currentData =
+                [
+                    ...tempMap.values()
+                ].sort(
+                    (a, b) =>
+                        a.time - b.time
+                );
         } else {
             generateMockChartData();
         }
     } catch (error) {
         console.warn(
-            'Backend price history failed or empty, using mock data',
+            'Price history unavailable. Using mock chart data.',
             error
         );
 
         generateMockChartData();
-    }
+    } finally {
+        updateChartSeries();
 
-    updateChartSeries();
-
-    if (elements.chartLoader) {
-        elements.chartLoader.classList.add('hidden');
+        if (elements.chartLoader) {
+            elements.chartLoader.classList.add(
+                'hidden'
+            );
+        }
     }
 }
 
@@ -309,23 +381,26 @@ async function loadNews() {
         return;
     }
 
-    const stockId = getStockId();
-
     elements.newsContainer.innerHTML =
         '<div class="news-loading">Loading latest news...</div>';
 
     try {
         const response = await fetch(
-            `${API_BASE_URL}/news/${stockId}`
+            `${API_BASE_URL}/news/${getStockId()}`
         );
 
         if (!response.ok) {
-            throw new Error('Failed to fetch news');
+            throw new Error(
+                `News API returned ${response.status}`
+            );
         }
 
         const news = await response.json();
 
-        if (!Array.isArray(news) || news.length === 0) {
+        if (
+            !Array.isArray(news) ||
+            news.length === 0
+        ) {
             elements.newsContainer.innerHTML =
                 '<div class="news-empty">No news available for this stock.</div>';
 
@@ -334,7 +409,10 @@ async function loadNews() {
 
         renderNews(news);
     } catch (error) {
-        console.error('News loading failed:', error);
+        console.error(
+            'News loading failed:',
+            error
+        );
 
         elements.newsContainer.innerHTML =
             '<div class="news-error">Unable to load latest news.</div>';
@@ -342,67 +420,117 @@ async function loadNews() {
 }
 
 function renderNews(news) {
-    const latestNews = [...news]
-        .sort((a, b) => {
-            return (
-                new Date(b.publishedAt || 0) -
-                new Date(a.publishedAt || 0)
-            );
-        })
-        .slice(0, 6);
+    const latestNews =
+        [...news]
+            .sort(
+                (a, b) =>
+                    new Date(
+                        b.publishedAt || 0
+                    ) -
+                    new Date(
+                        a.publishedAt || 0
+                    )
+            )
+            .slice(0, 6);
 
     elements.newsContainer.innerHTML = '';
 
     latestNews.forEach(article => {
-        const card = document.createElement('article');
-        card.className = 'news-card';
+        const card =
+            document.createElement(
+                'article'
+            );
 
-        const title = document.createElement('div');
-        title.className = 'news-card-title';
+        card.className =
+            'news-card';
+
+        const title =
+            document.createElement(
+                'div'
+            );
+
+        title.className =
+            'news-card-title';
 
         title.textContent =
-            cleanText(article.title) || 'Untitled Article';
+            cleanText(
+                article.title
+            ) ||
+            'Untitled Article';
 
-        const content = document.createElement('div');
-        content.className = 'news-card-content';
+        const content =
+            document.createElement(
+                'div'
+            );
 
-        const cleanContent = cleanText(article.content);
+        content.className =
+            'news-card-content';
 
         content.textContent =
             truncateText(
-                cleanContent || 'No description available.',
+                cleanText(
+                    article.content
+                ) ||
+                'No description available.',
                 180
             );
 
-        const footer = document.createElement('div');
-        footer.className = 'news-card-footer';
+        const footer =
+            document.createElement(
+                'div'
+            );
 
-        const date = document.createElement('span');
-        date.className = 'news-date';
+        footer.className =
+            'news-card-footer';
 
-        date.textContent = formatNewsDate(
-            article.publishedAt
-        );
+        const date =
+            document.createElement(
+                'span'
+            );
+
+        date.className =
+            'news-date';
+
+        date.textContent =
+            formatNewsDate(
+                article.publishedAt
+            );
 
         footer.appendChild(date);
 
         if (article.url) {
-            const link = document.createElement('a');
+            const link =
+                document.createElement(
+                    'a'
+                );
 
-            link.className = 'news-link';
-            link.href = article.url;
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            link.textContent = 'Read Article';
+            link.className =
+                'news-link';
+
+            link.href =
+                article.url;
+
+            link.target =
+                '_blank';
+
+            link.rel =
+                'noopener noreferrer';
+
+            link.textContent =
+                'Read Article';
 
             footer.appendChild(link);
         }
 
-        card.appendChild(title);
-        card.appendChild(content);
-        card.appendChild(footer);
+        card.append(
+            title,
+            content,
+            footer
+        );
 
-        elements.newsContainer.appendChild(card);
+        elements.newsContainer.appendChild(
+            card
+        );
     });
 }
 
@@ -411,50 +539,79 @@ function cleanText(value) {
         return '';
     }
 
-    const tempElement = document.createElement('div');
+    const tempElement =
+        document.createElement(
+            'div'
+        );
 
-    tempElement.innerHTML = String(value);
+    tempElement.innerHTML =
+        String(value);
 
-    return tempElement.textContent
+    return (
+        tempElement.textContent ||
+        tempElement.innerText ||
+        ''
+    )
         .replace(/\s+/g, ' ')
         .trim();
 }
 
-function truncateText(text, maxLength) {
+function truncateText(
+    text,
+    maxLength
+) {
     if (!text) {
         return '';
     }
 
-    if (text.length <= maxLength) {
+    if (
+        text.length <= maxLength
+    ) {
         return text;
     }
 
-    return `${text.substring(0, maxLength).trim()}...`;
+    return `${text
+        .substring(0, maxLength)
+        .trim()}...`;
 }
 
-function formatNewsDate(dateValue) {
-    if (!dateValue) {
+function formatNewsDate(
+    value
+) {
+    if (!value) {
         return 'Unknown date';
     }
 
-    const date = new Date(dateValue);
+    const date =
+        new Date(value);
 
-    if (Number.isNaN(date.getTime())) {
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
         return 'Unknown date';
     }
 
-    return date.toLocaleString([], {
-        dateStyle: 'short',
-        timeStyle: 'short'
-    });
+    return date.toLocaleString(
+        [],
+        {
+            dateStyle: 'short',
+            timeStyle: 'short'
+        }
+    );
 }
 
 async function performAnalysis() {
-    if (isLoading || isCooldown) {
+    if (
+        isLoading ||
+        isCooldown
+    ) {
         return;
     }
 
-    const stockId = getStockId();
+    const stockId =
+        getStockId();
 
     isLoading = true;
 
@@ -462,50 +619,59 @@ async function performAnalysis() {
     showError(false);
     resetAnalysisCards();
 
-    startPredictionCooldown();
-
     try {
-        const predResponse = await fetch(
-            `${API_BASE_URL}/predictions/${stockId}`,
-            {
-                method: 'POST'
-            }
-        );
+        const response =
+            await fetch(
+                `${API_BASE_URL}/predictions/${stockId}`,
+                {
+                    method: 'POST'
+                }
+            );
 
-        if (!predResponse.ok) {
+        if (!response.ok) {
             throw new Error(
-                `Prediction API failed with status ${predResponse.status}`
+                `Prediction API failed with status ${response.status}`
             );
         }
 
-        const predData = await predResponse.json();
+        const data =
+            await response.json();
 
-        console.log('Prediction response:', predData);
+        console.log(
+            'Prediction response:',
+            data
+        );
 
         const prediction =
-            predData.prediction || 'UNKNOWN';
+            data.prediction ||
+            'UNKNOWN';
 
         const probability =
-            Number(predData.probability ?? 0);
+            Number(
+                data.probability ?? 0
+            );
 
         const confidence =
             probability * 100;
 
         const decision =
-            predData.decision || 'HOLD';
+            data.decision ||
+            'HOLD';
 
         const sentiment =
-            Number(predData.sentiment ?? 0);
+            Number(
+                data.sentiment ?? 0
+            );
 
         const decisionConfidence =
             Number(
-                predData.decisionConfidence ??
-                probability ??
+                data.decisionConfidence ??
+                data.probability ??
                 0
             ) * 100;
 
         const reason =
-            predData.reason ||
+            data.reason ||
             'No explanation available.';
 
         updatePredictionCard(
@@ -530,6 +696,13 @@ async function performAnalysis() {
             reason
         );
 
+        /*
+         * IMPORTANT:
+         * Cooldown starts ONLY after
+         * successful prediction.
+         */
+        startPredictionCooldown();
+
     } catch (error) {
         console.error(
             'Prediction failed:',
@@ -538,10 +711,14 @@ async function performAnalysis() {
 
         showError(
             true,
-            'Failed to connect to backend.'
+            `Prediction failed: ${
+                error.message ||
+                'Unable to process the request.'
+            }`
         );
 
         resetAnalysisCards();
+
     } finally {
         isLoading = false;
 
@@ -552,29 +729,44 @@ async function performAnalysis() {
 
 function startPredictionCooldown() {
     if (cooldownTimer) {
-        clearInterval(cooldownTimer);
+        clearInterval(
+            cooldownTimer
+        );
     }
 
     isCooldown = true;
-    cooldownRemaining = PREDICTION_COOLDOWN;
+
+    cooldownRemaining =
+        PREDICTION_COOLDOWN;
 
     updateAnalyzeButton();
 
-    cooldownTimer = setInterval(() => {
-        cooldownRemaining--;
-
-        updateAnalyzeButton();
-
-        if (cooldownRemaining <= 0) {
-            clearInterval(cooldownTimer);
-            cooldownTimer = null;
-
-            isCooldown = false;
-            cooldownRemaining = 0;
+    cooldownTimer =
+        setInterval(() => {
+            cooldownRemaining--;
 
             updateAnalyzeButton();
-        }
-    }, 1000);
+
+            if (
+                cooldownRemaining <=
+                0
+            ) {
+                clearInterval(
+                    cooldownTimer
+                );
+
+                cooldownTimer =
+                    null;
+
+                isCooldown =
+                    false;
+
+                cooldownRemaining =
+                    0;
+
+                updateAnalyzeButton();
+            }
+        }, 1000);
 }
 
 function updateAnalyzeButton() {
@@ -582,12 +774,9 @@ function updateAnalyzeButton() {
         return;
     }
 
-    const shouldDisable =
+    elements.analyzeBtn.disabled =
         isLoading ||
         isCooldown;
-
-    elements.analyzeBtn.disabled =
-        shouldDisable;
 
     if (elements.btnLoader) {
         elements.btnLoader.classList.toggle(
@@ -614,14 +803,18 @@ function updatePredictionCard(
     prediction,
     confidence
 ) {
-    const normalizedPrediction =
-        String(prediction).toUpperCase();
+    const value =
+        String(
+            prediction
+        ).toUpperCase();
 
     elements.predValue.textContent =
-        normalizedPrediction;
+        value;
 
     elements.predConfidence.textContent =
-        `${Number(confidence).toFixed(1)}%`;
+        `${Number(
+            confidence
+        ).toFixed(1)}%`;
 
     elements.predTimestamp.textContent =
         new Date().toLocaleTimeString(
@@ -632,16 +825,21 @@ function updatePredictionCard(
             }
         );
 
-    let predictionClass = 'val-hold';
+    let className =
+        'val-hold';
 
-    if (normalizedPrediction === 'UP') {
-        predictionClass = 'val-up';
-    } else if (normalizedPrediction === 'DOWN') {
-        predictionClass = 'val-down';
+    if (value === 'UP') {
+        className =
+            'val-up';
+    }
+
+    if (value === 'DOWN') {
+        className =
+            'val-down';
     }
 
     elements.predValue.className =
-        `prediction-value ${predictionClass}`;
+        `prediction-value ${className}`;
 }
 
 function updateDecisionCard(
@@ -649,33 +847,112 @@ function updateDecisionCard(
     confidence,
     reason
 ) {
-    const normalizedDecision =
-        String(decision).toUpperCase();
+    const value =
+        String(
+            decision
+        ).toUpperCase();
 
     elements.decisionValue.textContent =
-        normalizedDecision;
+        value;
 
     elements.decisionConfidence.textContent =
-        `${Number(confidence).toFixed(1)}% Confidence`;
+        `${Number(
+            confidence
+        ).toFixed(1)}% Confidence`;
 
     elements.decisionReason.textContent =
         reason;
 
     elements.decisionCard.setAttribute(
         'data-decision',
-        normalizedDecision
+        value
     );
 
-    let decisionClass = 'val-hold';
+    let className =
+        'val-hold';
 
-    if (normalizedDecision === 'BUY') {
-        decisionClass = 'val-buy';
-    } else if (normalizedDecision === 'SELL') {
-        decisionClass = 'val-sell';
+    if (value === 'BUY') {
+        className =
+            'val-buy';
+    }
+
+    if (value === 'SELL') {
+        className =
+            'val-sell';
     }
 
     elements.decisionValue.className =
-        `decision-value ${decisionClass}`;
+        `decision-value ${className}`;
+}
+
+function updateSentimentCard(
+    sentiment
+) {
+    const score =
+        Number(sentiment);
+
+    if (
+        !Number.isFinite(score)
+    ) {
+        elements.sentimentScore.textContent =
+            '--';
+
+        elements.sentimentLabel.textContent =
+            'Neutral';
+
+        setGauge(50);
+
+        return;
+    }
+
+    const clamped =
+        Math.max(
+            -1,
+            Math.min(
+                1,
+                score
+            )
+        );
+
+    const percentage =
+        ((clamped + 1) / 2) *
+        100;
+
+    elements.sentimentScore.textContent =
+        clamped.toFixed(2);
+
+    setGauge(
+        percentage
+    );
+
+    if (
+        clamped > 0.15
+    ) {
+        elements.sentimentLabel.textContent =
+            'Bullish';
+    } else if (
+        clamped < -0.15
+    ) {
+        elements.sentimentLabel.textContent =
+            'Bearish';
+    } else {
+        elements.sentimentLabel.textContent =
+            'Neutral';
+    }
+}
+
+function setGauge(
+    percentage
+) {
+    if (elements.gaugeFill) {
+        elements.gaugeFill.style.width =
+            `${percentage}%`;
+    }
+
+    if (elements.gaugeMarker) {
+        elements.gaugeMarker.style.left =
+            `${percentage}%`;
+    }
 }
 
 function resetAnalysisCards() {
@@ -702,15 +979,7 @@ function resetAnalysisCards() {
     elements.sentimentLabel.textContent =
         'Analyzing sentiment';
 
-    if (elements.gaugeMarker) {
-        elements.gaugeMarker.style.left =
-            '50%';
-    }
-
-    if (elements.gaugeFill) {
-        elements.gaugeFill.style.width =
-            '50%';
-    }
+    setGauge(50);
 }
 
 function resetCards() {
@@ -722,6 +991,9 @@ function resetCards() {
 
     elements.predTimestamp.textContent =
         '--:--';
+
+    elements.predValue.className =
+        'prediction-value val-hold';
 
     elements.decisionValue.textContent =
         'HOLD';
@@ -746,22 +1018,13 @@ function resetCards() {
     elements.sentimentLabel.textContent =
         'Neutral';
 
-    if (elements.gaugeMarker) {
-        elements.gaugeMarker.style.left =
-            '50%';
-    }
-
-    if (elements.gaugeFill) {
-        elements.gaugeFill.style.width =
-            '50%';
-    }
+    setGauge(50);
 
     showError(false);
 }
 
-function setLoading(isLoadingState) {
-    isLoading = isLoadingState;
-
+function setLoading(value) {
+    isLoading = value;
     updateAnalyzeButton();
 }
 
@@ -769,9 +1032,17 @@ function showError(
     show,
     message = ''
 ) {
+    if (!elements.errorState) {
+        return;
+    }
+
     if (show) {
-        elements.errorMessage.textContent =
-            message;
+        if (
+            elements.errorMessage
+        ) {
+            elements.errorMessage.textContent =
+                message;
+        }
 
         elements.errorState.classList.remove(
             'hidden'
@@ -789,7 +1060,43 @@ function addToHistory(
     confidence,
     reason
 ) {
-    const time =
+    if (
+        !elements.historyBody
+    ) {
+        return;
+    }
+
+    const tr =
+        document.createElement(
+            'tr'
+        );
+
+    const timeCell =
+        document.createElement(
+            'td'
+        );
+
+    const predictionCell =
+        document.createElement(
+            'td'
+        );
+
+    const decisionCell =
+        document.createElement(
+            'td'
+        );
+
+    const confidenceCell =
+        document.createElement(
+            'td'
+        );
+
+    const reasonCell =
+        document.createElement(
+            'td'
+        );
+
+    timeCell.textContent =
         new Date().toLocaleTimeString(
             [],
             {
@@ -798,35 +1105,20 @@ function addToHistory(
             }
         );
 
-    const tr =
-        document.createElement('tr');
-
-    const timeCell =
-        document.createElement('td');
-
-    const predictionCell =
-        document.createElement('td');
-
-    const decisionCell =
-        document.createElement('td');
-
-    const confidenceCell =
-        document.createElement('td');
-
-    const reasonCell =
-        document.createElement('td');
-
-    timeCell.textContent =
-        time;
-
     predictionCell.textContent =
-        String(prediction).toUpperCase();
+        String(
+            prediction
+        ).toUpperCase();
 
     decisionCell.textContent =
-        String(decision).toUpperCase();
+        String(
+            decision
+        ).toUpperCase();
 
     confidenceCell.textContent =
-        `${Number(confidence).toFixed(1)}%`;
+        `${Number(
+            confidence
+        ).toFixed(1)}%`;
 
     reasonCell.textContent =
         reason;
@@ -834,11 +1126,13 @@ function addToHistory(
     reasonCell.className =
         'expandable-reason';
 
-    tr.appendChild(timeCell);
-    tr.appendChild(predictionCell);
-    tr.appendChild(decisionCell);
-    tr.appendChild(confidenceCell);
-    tr.appendChild(reasonCell);
+    tr.append(
+        timeCell,
+        predictionCell,
+        decisionCell,
+        confidenceCell,
+        reasonCell
+    );
 
     const emptyRow =
         elements.historyBody.querySelector(
@@ -860,7 +1154,8 @@ function generateMockChartData() {
 
     let basePrice = 150;
 
-    const today = new Date();
+    const today =
+        new Date();
 
     today.setUTCHours(
         0,
@@ -869,36 +1164,53 @@ function generateMockChartData() {
         0
     );
 
-    for (let i = 100; i >= 0; i--) {
+    for (
+        let i = 100;
+        i >= 0;
+        i--
+    ) {
         const date =
             new Date(
                 today.getTime() -
                 i * 86400000
             );
 
-        const timeNum =
+        const time =
             Math.floor(
-                date.getTime() / 1000
+                date.getTime() /
+                1000
             );
 
         const change =
-            (Math.random() - 0.5) * 5;
+            (
+                Math.random() -
+                0.5
+            ) * 5;
 
-        basePrice += change;
+        basePrice +=
+            change;
 
         currentData.push({
-            time: timeNum,
-            value: basePrice,
-            open: basePrice - change / 2,
+            time,
+            value:
+                basePrice,
+            open:
+                basePrice -
+                change / 2,
             high:
                 basePrice +
-                Math.abs(change) +
+                Math.abs(
+                    change
+                ) +
                 Math.random() * 2,
             low:
                 basePrice -
-                Math.abs(change) -
+                Math.abs(
+                    change
+                ) -
                 Math.random() * 2,
-            close: basePrice
+            close:
+                basePrice
         });
     }
 }
