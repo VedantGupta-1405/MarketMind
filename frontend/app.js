@@ -1,5 +1,7 @@
 const API_BASE_URL = 'http://localhost:8080';
 
+const PREDICTION_COOLDOWN = 15;
+
 const elements = {
     stockSelector: document.getElementById('stockSelector'),
     analyzeBtn: document.getElementById('analyzeBtn'),
@@ -37,6 +39,11 @@ let chart = null;
 let series = null;
 let currentChartType = 'line';
 let currentData = [];
+
+let isLoading = false;
+let isCooldown = false;
+let cooldownRemaining = 0;
+let cooldownTimer = null;
 
 const stockIdMap = {
     AAPL: 1,
@@ -352,6 +359,7 @@ function renderNews(news) {
 
         const title = document.createElement('div');
         title.className = 'news-card-title';
+
         title.textContent =
             cleanText(article.title) || 'Untitled Article';
 
@@ -371,6 +379,7 @@ function renderNews(news) {
 
         const date = document.createElement('span');
         date.className = 'news-date';
+
         date.textContent = formatNewsDate(
             article.publishedAt
         );
@@ -441,12 +450,19 @@ function formatNewsDate(dateValue) {
 }
 
 async function performAnalysis() {
+    if (isLoading || isCooldown) {
+        return;
+    }
+
     const stockId = getStockId();
+
+    isLoading = true;
 
     setLoading(true);
     showError(false);
-
     resetAnalysisCards();
+
+    startPredictionCooldown();
 
     try {
         const predResponse = await fetch(
@@ -527,7 +543,70 @@ async function performAnalysis() {
 
         resetAnalysisCards();
     } finally {
+        isLoading = false;
+
         setLoading(false);
+        updateAnalyzeButton();
+    }
+}
+
+function startPredictionCooldown() {
+    if (cooldownTimer) {
+        clearInterval(cooldownTimer);
+    }
+
+    isCooldown = true;
+    cooldownRemaining = PREDICTION_COOLDOWN;
+
+    updateAnalyzeButton();
+
+    cooldownTimer = setInterval(() => {
+        cooldownRemaining--;
+
+        updateAnalyzeButton();
+
+        if (cooldownRemaining <= 0) {
+            clearInterval(cooldownTimer);
+            cooldownTimer = null;
+
+            isCooldown = false;
+            cooldownRemaining = 0;
+
+            updateAnalyzeButton();
+        }
+    }, 1000);
+}
+
+function updateAnalyzeButton() {
+    if (!elements.analyzeBtn) {
+        return;
+    }
+
+    const shouldDisable =
+        isLoading ||
+        isCooldown;
+
+    elements.analyzeBtn.disabled =
+        shouldDisable;
+
+    if (elements.btnLoader) {
+        elements.btnLoader.classList.toggle(
+            'hidden',
+            !isLoading
+        );
+    }
+
+    if (elements.btnText) {
+        if (isLoading) {
+            elements.btnText.textContent =
+                'Analyzing...';
+        } else if (isCooldown) {
+            elements.btnText.textContent =
+                `Cooldown ${cooldownRemaining}s`;
+        } else {
+            elements.btnText.textContent =
+                'Analyze / Predict';
+        }
     }
 }
 
@@ -627,43 +706,81 @@ function resetAnalysisCards() {
         elements.gaugeMarker.style.left =
             '50%';
     }
+
+    if (elements.gaugeFill) {
+        elements.gaugeFill.style.width =
+            '50%';
+    }
 }
 
-function updateSentimentCard(score) {
-    const numericScore =
-        Number(score);
+function resetCards() {
+    elements.predValue.textContent =
+        '--';
 
-    const safeScore =
-        Number.isFinite(numericScore)
-            ? Math.max(-1, Math.min(1, numericScore))
-            : 0;
+    elements.predConfidence.textContent =
+        '--%';
+
+    elements.predTimestamp.textContent =
+        '--:--';
+
+    elements.decisionValue.textContent =
+        'HOLD';
+
+    elements.decisionConfidence.textContent =
+        '--% Confidence';
+
+    elements.decisionReason.textContent =
+        'Awaiting analysis...';
+
+    elements.decisionCard.setAttribute(
+        'data-decision',
+        'HOLD'
+    );
+
+    elements.decisionValue.className =
+        'decision-value val-hold';
 
     elements.sentimentScore.textContent =
-        safeScore.toFixed(2);
+        '--';
 
-    const percentage =
-        ((safeScore + 1) / 2) * 100;
+    elements.sentimentLabel.textContent =
+        'Neutral';
 
     if (elements.gaugeMarker) {
         elements.gaugeMarker.style.left =
-            `${percentage}%`;
+            '50%';
     }
 
     if (elements.gaugeFill) {
         elements.gaugeFill.style.width =
-            `${percentage}%`;
+            '50%';
     }
 
-    let label = 'Neutral';
+    showError(false);
+}
 
-    if (safeScore > 0.3) {
-        label = 'Bullish';
-    } else if (safeScore < -0.3) {
-        label = 'Bearish';
+function setLoading(isLoadingState) {
+    isLoading = isLoadingState;
+
+    updateAnalyzeButton();
+}
+
+function showError(
+    show,
+    message = ''
+) {
+    if (show) {
+        elements.errorMessage.textContent =
+            message;
+
+        elements.errorState.classList.remove(
+            'hidden'
+        );
+    } else {
+        elements.errorState.classList.add(
+            'hidden'
+        );
     }
-
-    elements.sentimentLabel.textContent =
-        label;
 }
 
 function addToHistory(
@@ -736,89 +853,6 @@ function addToHistory(
         tr,
         elements.historyBody.firstChild
     );
-}
-
-function resetCards() {
-    elements.predValue.textContent =
-        '--';
-
-    elements.predConfidence.textContent =
-        '--%';
-
-    elements.predTimestamp.textContent =
-        '--:--';
-
-    elements.decisionValue.textContent =
-        'HOLD';
-
-    elements.decisionConfidence.textContent =
-        '--% Confidence';
-
-    elements.decisionReason.textContent =
-        'Awaiting analysis...';
-
-    elements.decisionCard.setAttribute(
-        'data-decision',
-        'HOLD'
-    );
-
-    elements.decisionValue.className =
-        'decision-value val-hold';
-
-    elements.sentimentScore.textContent =
-        '--';
-
-    elements.sentimentLabel.textContent =
-        'Neutral';
-
-    if (elements.gaugeMarker) {
-        elements.gaugeMarker.style.left =
-            '50%';
-    }
-
-    if (elements.gaugeFill) {
-        elements.gaugeFill.style.width =
-            '50%';
-    }
-
-    showError(false);
-}
-
-function setLoading(isLoading) {
-    elements.analyzeBtn.disabled =
-        isLoading;
-
-    if (elements.btnLoader) {
-        elements.btnLoader.classList.toggle(
-            'hidden',
-            !isLoading
-        );
-    }
-
-    if (elements.btnText) {
-        elements.btnText.textContent =
-            isLoading
-                ? 'Analyzing...'
-                : 'Analyze / Predict';
-    }
-}
-
-function showError(
-    show,
-    message = ''
-) {
-    if (show) {
-        elements.errorMessage.textContent =
-            message;
-
-        elements.errorState.classList.remove(
-            'hidden'
-        );
-    } else {
-        elements.errorState.classList.add(
-            'hidden'
-        );
-    }
 }
 
 function generateMockChartData() {
