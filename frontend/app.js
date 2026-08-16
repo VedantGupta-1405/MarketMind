@@ -40,21 +40,20 @@ let currentData = [];
 
 const stockIdMap = {
     AAPL: 1,
-    GOOGL: 2,
-    MSFT: 3,
-    AMZN: 4
+    GOOGL: 4,
+    MSFT: 5,
+    AMZN: 6
 };
 
 initApp();
 
 function initApp() {
-
     initChart();
-
     loadStockData();
     loadNews();
 
     elements.stockSelector.addEventListener('change', () => {
+        resetCards();
         loadStockData();
         loadNews();
     });
@@ -66,24 +65,29 @@ function initApp() {
     }
 
     elements.chartBtns.forEach(btn => {
-        btn.addEventListener('click', e => {
-            elements.chartBtns.forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            changeChartType(e.target.dataset.type);
+        btn.addEventListener('click', event => {
+            elements.chartBtns.forEach(button => {
+                button.classList.remove('active');
+            });
+
+            event.target.classList.add('active');
+
+            changeChartType(event.target.dataset.type);
         });
     });
 }
 
 function getStockId() {
     const symbol = elements.stockSelector.value;
+
     return stockIdMap[symbol] || 1;
 }
 
 function initChart() {
-
     chart = LightweightCharts.createChart(elements.chartContainer, {
         width: elements.chartContainer.clientWidth,
         height: 300,
+
         layout: {
             background: {
                 type: 'solid',
@@ -92,6 +96,7 @@ function initChart() {
             textColor: '#787B86',
             fontFamily: "'Inter', sans-serif"
         },
+
         grid: {
             vertLines: {
                 color: '#2A2E39'
@@ -100,20 +105,23 @@ function initChart() {
                 color: '#2A2E39'
             }
         },
+
         rightPriceScale: {
             borderVisible: false
         },
+
         timeScale: {
             borderVisible: false,
             timeVisible: true
         },
+
         crosshair: {
             mode: LightweightCharts.CrosshairMode.Normal
         }
     });
 
     window.addEventListener('resize', () => {
-        if (elements.chartContainer) {
+        if (elements.chartContainer && chart) {
             chart.applyOptions({
                 width: elements.chartContainer.clientWidth
             });
@@ -124,7 +132,6 @@ function initChart() {
 }
 
 function changeChartType(type) {
-
     if (series) {
         chart.removeSeries(series);
     }
@@ -132,7 +139,6 @@ function changeChartType(type) {
     currentChartType = type;
 
     if (type === 'line') {
-
         series = chart.addSeries(
             LightweightCharts.LineSeries,
             {
@@ -140,9 +146,7 @@ function changeChartType(type) {
                 lineWidth: 2
             }
         );
-
     } else if (type === 'area') {
-
         series = chart.addSeries(
             LightweightCharts.AreaSeries,
             {
@@ -152,9 +156,7 @@ function changeChartType(type) {
                 lineWidth: 2
             }
         );
-
     } else if (type === 'candlestick') {
-
         series = chart.addSeries(
             LightweightCharts.CandlestickSeries,
             {
@@ -167,43 +169,49 @@ function changeChartType(type) {
         );
     }
 
-    if (currentData.length > 0) {
+    updateChartSeries();
+}
 
-        if (type === 'line' || type === 'area') {
-
-            series.setData(
-                currentData.map(d => ({
-                    time: d.time,
-                    value: d.value
-                }))
-            );
-
-        } else {
-
-            series.setData(
-                currentData.map(d => ({
-                    time: d.time,
-                    open: d.open,
-                    high: d.high,
-                    low: d.low,
-                    close: d.close
-                }))
-            );
-        }
-
-        chart.timeScale().fitContent();
+function updateChartSeries() {
+    if (!series || currentData.length === 0) {
+        return;
     }
+
+    if (
+        currentChartType === 'line' ||
+        currentChartType === 'area'
+    ) {
+        series.setData(
+            currentData.map(data => ({
+                time: data.time,
+                value: data.value
+            }))
+        );
+    } else {
+        series.setData(
+            currentData.map(data => ({
+                time: data.time,
+                open: data.open,
+                high: data.high,
+                low: data.low,
+                close: data.close
+            }))
+        );
+    }
+
+    chart.timeScale().fitContent();
 }
 
 async function loadStockData() {
-
     showError(false);
-    elements.chartLoader.classList.remove('hidden');
+
+    if (elements.chartLoader) {
+        elements.chartLoader.classList.remove('hidden');
+    }
 
     const stockId = getStockId();
 
     try {
-
         const response = await fetch(
             `${API_BASE_URL}/price-history/${stockId}`
         );
@@ -214,106 +222,82 @@ async function loadStockData() {
 
         const data = await response.json();
 
-        if (data && data.length > 1) {
-
+        if (Array.isArray(data) && data.length > 1) {
             const tempMap = new Map();
 
-            data.forEach(d => {
-
+            data.forEach(item => {
                 let dateObj;
 
-                if (Array.isArray(d.date)) {
-
+                if (Array.isArray(item.date)) {
                     dateObj = new Date(
                         Date.UTC(
-                            d.date[0],
-                            d.date[1] - 1,
-                            d.date[2]
+                            item.date[0],
+                            item.date[1] - 1,
+                            item.date[2]
                         )
                     );
-
                 } else {
-
                     dateObj = new Date(
-                        d.date ||
-                        d.timestamp ||
+                        item.date ||
+                        item.timestamp ||
                         Date.now()
                     );
                 }
 
+                if (Number.isNaN(dateObj.getTime())) {
+                    return;
+                }
+
                 dateObj.setUTCHours(0, 0, 0, 0);
 
-                const timeNum =
-                    Math.floor(dateObj.getTime() / 1000);
+                const timeNum = Math.floor(
+                    dateObj.getTime() / 1000
+                );
 
-                const cPrice =
-                    d.closePrice || 150;
+                const closePrice =
+                    Number(item.closePrice ?? item.close ?? 150);
+
+                const openPrice =
+                    Number(item.openPrice ?? item.open ?? closePrice);
+
+                const highPrice =
+                    Number(item.highPrice ?? item.high ?? closePrice);
+
+                const lowPrice =
+                    Number(item.lowPrice ?? item.low ?? closePrice);
 
                 tempMap.set(timeNum, {
                     time: timeNum,
-                    value: cPrice,
-                    open: d.openPrice || cPrice,
-                    high: d.high || cPrice,
-                    low: d.low || cPrice,
-                    close: cPrice
+                    value: closePrice,
+                    open: openPrice,
+                    high: highPrice,
+                    low: lowPrice,
+                    close: closePrice
                 });
             });
 
             currentData = Array.from(tempMap.values())
                 .sort((a, b) => a.time - b.time);
-
         } else {
-
             generateMockChartData();
         }
-
-    } catch (err) {
-
+    } catch (error) {
         console.warn(
             'Backend price history failed or empty, using mock data',
-            err
+            error
         );
 
         generateMockChartData();
     }
 
-    if (series && currentData.length > 0) {
+    updateChartSeries();
 
-        if (
-            currentChartType === 'line' ||
-            currentChartType === 'area'
-        ) {
-
-            series.setData(
-                currentData.map(d => ({
-                    time: d.time,
-                    value: d.value
-                }))
-            );
-
-        } else {
-
-            series.setData(
-                currentData.map(d => ({
-                    time: d.time,
-                    open: d.open,
-                    high: d.high,
-                    low: d.low,
-                    close: d.close
-                }))
-            );
-        }
-
-        chart.timeScale().fitContent();
+    if (elements.chartLoader) {
+        elements.chartLoader.classList.add('hidden');
     }
-
-    elements.chartLoader.classList.add('hidden');
-
-    resetCards();
 }
 
 async function loadNews() {
-
     if (!elements.newsContainer) {
         return;
     }
@@ -324,7 +308,6 @@ async function loadNews() {
         '<div class="news-loading">Loading latest news...</div>';
 
     try {
-
         const response = await fetch(
             `${API_BASE_URL}/news/${stockId}`
         );
@@ -335,8 +318,7 @@ async function loadNews() {
 
         const news = await response.json();
 
-        if (!news || news.length === 0) {
-
+        if (!Array.isArray(news) || news.length === 0) {
             elements.newsContainer.innerHTML =
                 '<div class="news-empty">No news available for this stock.</div>';
 
@@ -344,9 +326,7 @@ async function loadNews() {
         }
 
         renderNews(news);
-
     } catch (error) {
-
         console.error('News loading failed:', error);
 
         elements.newsContainer.innerHTML =
@@ -355,29 +335,36 @@ async function loadNews() {
 }
 
 function renderNews(news) {
-
-    const latestNews = news
+    const latestNews = [...news]
         .sort((a, b) => {
-            return new Date(b.publishedAt || 0) -
-                   new Date(a.publishedAt || 0);
+            return (
+                new Date(b.publishedAt || 0) -
+                new Date(a.publishedAt || 0)
+            );
         })
         .slice(0, 6);
 
     elements.newsContainer.innerHTML = '';
 
     latestNews.forEach(article => {
-
         const card = document.createElement('article');
         card.className = 'news-card';
 
         const title = document.createElement('div');
         title.className = 'news-card-title';
-        title.textContent = article.title || 'Untitled';
+        title.textContent =
+            cleanText(article.title) || 'Untitled Article';
 
         const content = document.createElement('div');
         content.className = 'news-card-content';
+
+        const cleanContent = cleanText(article.content);
+
         content.textContent =
-            article.content || 'No description available.';
+            truncateText(
+                cleanContent || 'No description available.',
+                180
+            );
 
         const footer = document.createElement('div');
         footer.className = 'news-card-footer';
@@ -391,7 +378,6 @@ function renderNews(news) {
         footer.appendChild(date);
 
         if (article.url) {
-
             const link = document.createElement('a');
 
             link.className = 'news-link';
@@ -411,8 +397,33 @@ function renderNews(news) {
     });
 }
 
-function formatNewsDate(dateValue) {
+function cleanText(value) {
+    if (!value) {
+        return '';
+    }
 
+    const tempElement = document.createElement('div');
+
+    tempElement.innerHTML = String(value);
+
+    return tempElement.textContent
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function truncateText(text, maxLength) {
+    if (!text) {
+        return '';
+    }
+
+    if (text.length <= maxLength) {
+        return text;
+    }
+
+    return `${text.substring(0, maxLength).trim()}...`;
+}
+
+function formatNewsDate(dateValue) {
     if (!dateValue) {
         return 'Unknown date';
     }
@@ -430,14 +441,14 @@ function formatNewsDate(dateValue) {
 }
 
 async function performAnalysis() {
-
     const stockId = getStockId();
 
     setLoading(true);
     showError(false);
 
-    try {
+    resetAnalysisCards();
 
+    try {
         const predResponse = await fetch(
             `${API_BASE_URL}/predictions/${stockId}`,
             {
@@ -446,48 +457,76 @@ async function performAnalysis() {
         );
 
         if (!predResponse.ok) {
-            throw new Error('Prediction API failed');
+            throw new Error(
+                `Prediction API failed with status ${predResponse.status}`
+            );
         }
 
         const predData = await predResponse.json();
+
+        console.log('Prediction response:', predData);
 
         const prediction =
             predData.prediction || 'UNKNOWN';
 
         const probability =
-            Number(predData.probability || 0);
+            Number(predData.probability ?? 0);
 
-        const confidence = probability * 100;
+        const confidence =
+            probability * 100;
+
+        const decision =
+            predData.decision || 'HOLD';
+
+        const sentiment =
+            Number(predData.sentiment ?? 0);
+
+        const decisionConfidence =
+            Number(
+                predData.decisionConfidence ??
+                probability ??
+                0
+            ) * 100;
+
+        const reason =
+            predData.reason ||
+            'No explanation available.';
 
         updatePredictionCard(
             prediction,
             confidence
         );
 
-        resetDecisionCard();
+        updateDecisionCard(
+            decision,
+            decisionConfidence,
+            reason
+        );
 
-        resetSentimentCard();
+        updateSentimentCard(
+            sentiment
+        );
 
         addToHistory(
             prediction,
-            'PENDING',
-            confidence,
-            'Decision and sentiment are processed by the backend.'
+            decision,
+            decisionConfidence,
+            reason
         );
 
-        await loadNews();
-
-    } catch (err) {
-
-        console.error(err);
+    } catch (error) {
+        console.error(
+            'Prediction failed:',
+            error
+        );
 
         showError(
             true,
             'Failed to connect to backend.'
         );
 
+        resetAnalysisCards();
     } finally {
-
         setLoading(false);
     }
 }
@@ -496,12 +535,14 @@ function updatePredictionCard(
     prediction,
     confidence
 ) {
+    const normalizedPrediction =
+        String(prediction).toUpperCase();
 
     elements.predValue.textContent =
-        prediction.toUpperCase();
+        normalizedPrediction;
 
     elements.predConfidence.textContent =
-        `${confidence.toFixed(1)}%`;
+        `${Number(confidence).toFixed(1)}%`;
 
     elements.predTimestamp.textContent =
         new Date().toLocaleTimeString(
@@ -512,19 +553,53 @@ function updatePredictionCard(
             }
         );
 
+    let predictionClass = 'val-hold';
+
+    if (normalizedPrediction === 'UP') {
+        predictionClass = 'val-up';
+    } else if (normalizedPrediction === 'DOWN') {
+        predictionClass = 'val-down';
+    }
+
     elements.predValue.className =
-        'prediction-value ' +
-        (
-            prediction.toUpperCase() === 'UP'
-                ? 'val-up'
-                : prediction.toUpperCase() === 'DOWN'
-                    ? 'val-down'
-                    : 'val-hold'
-        );
+        `prediction-value ${predictionClass}`;
 }
 
-function resetDecisionCard() {
+function updateDecisionCard(
+    decision,
+    confidence,
+    reason
+) {
+    const normalizedDecision =
+        String(decision).toUpperCase();
 
+    elements.decisionValue.textContent =
+        normalizedDecision;
+
+    elements.decisionConfidence.textContent =
+        `${Number(confidence).toFixed(1)}% Confidence`;
+
+    elements.decisionReason.textContent =
+        reason;
+
+    elements.decisionCard.setAttribute(
+        'data-decision',
+        normalizedDecision
+    );
+
+    let decisionClass = 'val-hold';
+
+    if (normalizedDecision === 'BUY') {
+        decisionClass = 'val-buy';
+    } else if (normalizedDecision === 'SELL') {
+        decisionClass = 'val-sell';
+    }
+
+    elements.decisionValue.className =
+        `decision-value ${decisionClass}`;
+}
+
+function resetAnalysisCards() {
     elements.decisionValue.textContent =
         'PROCESSING';
 
@@ -532,7 +607,7 @@ function resetDecisionCard() {
         '--% Confidence';
 
     elements.decisionReason.textContent =
-        'Decision is being generated by the backend.';
+        'Generating prediction, sentiment and decision...';
 
     elements.decisionCard.setAttribute(
         'data-decision',
@@ -541,35 +616,49 @@ function resetDecisionCard() {
 
     elements.decisionValue.className =
         'decision-value val-hold';
-}
 
-function resetSentimentCard() {
+    elements.sentimentScore.textContent =
+        '--';
 
-    updateSentimentCard(0);
-
-    elements.sentimentScore.textContent = '--';
     elements.sentimentLabel.textContent =
-        'Awaiting sentiment analysis';
+        'Analyzing sentiment';
+
+    if (elements.gaugeMarker) {
+        elements.gaugeMarker.style.left =
+            '50%';
+    }
 }
 
 function updateSentimentCard(score) {
+    const numericScore =
+        Number(score);
+
+    const safeScore =
+        Number.isFinite(numericScore)
+            ? Math.max(-1, Math.min(1, numericScore))
+            : 0;
 
     elements.sentimentScore.textContent =
-        Number(score).toFixed(2);
+        safeScore.toFixed(2);
 
     const percentage =
-        ((Number(score) + 1) / 2) * 100;
+        ((safeScore + 1) / 2) * 100;
 
-    elements.gaugeMarker.style.left =
-        `${Math.max(0, Math.min(100, percentage))}%`;
+    if (elements.gaugeMarker) {
+        elements.gaugeMarker.style.left =
+            `${percentage}%`;
+    }
+
+    if (elements.gaugeFill) {
+        elements.gaugeFill.style.width =
+            `${percentage}%`;
+    }
 
     let label = 'Neutral';
 
-    if (score > 0.3) {
+    if (safeScore > 0.3) {
         label = 'Bullish';
-    }
-
-    if (score < -0.3) {
+    } else if (safeScore < -0.3) {
         label = 'Bearish';
     }
 
@@ -583,7 +672,6 @@ function addToHistory(
     confidence,
     reason
 ) {
-
     const time =
         new Date().toLocaleTimeString(
             [],
@@ -596,13 +684,44 @@ function addToHistory(
     const tr =
         document.createElement('tr');
 
-    tr.innerHTML = `
-        <td>${time}</td>
-        <td>${prediction}</td>
-        <td>${decision}</td>
-        <td>${confidence.toFixed(1)}%</td>
-        <td class="expandable-reason">${reason}</td>
-    `;
+    const timeCell =
+        document.createElement('td');
+
+    const predictionCell =
+        document.createElement('td');
+
+    const decisionCell =
+        document.createElement('td');
+
+    const confidenceCell =
+        document.createElement('td');
+
+    const reasonCell =
+        document.createElement('td');
+
+    timeCell.textContent =
+        time;
+
+    predictionCell.textContent =
+        String(prediction).toUpperCase();
+
+    decisionCell.textContent =
+        String(decision).toUpperCase();
+
+    confidenceCell.textContent =
+        `${Number(confidence).toFixed(1)}%`;
+
+    reasonCell.textContent =
+        reason;
+
+    reasonCell.className =
+        'expandable-reason';
+
+    tr.appendChild(timeCell);
+    tr.appendChild(predictionCell);
+    tr.appendChild(decisionCell);
+    tr.appendChild(confidenceCell);
+    tr.appendChild(reasonCell);
 
     const emptyRow =
         elements.historyBody.querySelector(
@@ -620,12 +739,18 @@ function addToHistory(
 }
 
 function resetCards() {
+    elements.predValue.textContent =
+        '--';
 
-    elements.predValue.textContent = '--';
-    elements.predConfidence.textContent = '--%';
-    elements.predTimestamp.textContent = '--:--';
+    elements.predConfidence.textContent =
+        '--%';
 
-    elements.decisionValue.textContent = 'HOLD';
+    elements.predTimestamp.textContent =
+        '--:--';
+
+    elements.decisionValue.textContent =
+        'HOLD';
+
     elements.decisionConfidence.textContent =
         '--% Confidence';
 
@@ -640,14 +765,26 @@ function resetCards() {
     elements.decisionValue.className =
         'decision-value val-hold';
 
-    elements.sentimentScore.textContent = '--';
-    elements.sentimentLabel.textContent = 'Neutral';
+    elements.sentimentScore.textContent =
+        '--';
 
-    elements.gaugeMarker.style.left = '50%';
+    elements.sentimentLabel.textContent =
+        'Neutral';
+
+    if (elements.gaugeMarker) {
+        elements.gaugeMarker.style.left =
+            '50%';
+    }
+
+    if (elements.gaugeFill) {
+        elements.gaugeFill.style.width =
+            '50%';
+    }
+
+    showError(false);
 }
 
 function setLoading(isLoading) {
-
     elements.analyzeBtn.disabled =
         isLoading;
 
@@ -670,18 +807,14 @@ function showError(
     show,
     message = ''
 ) {
-
     if (show) {
-
         elements.errorMessage.textContent =
             message;
 
         elements.errorState.classList.remove(
             'hidden'
         );
-
     } else {
-
         elements.errorState.classList.add(
             'hidden'
         );
@@ -689,7 +822,6 @@ function showError(
 }
 
 function generateMockChartData() {
-
     currentData = [];
 
     let basePrice = 150;
@@ -704,15 +836,15 @@ function generateMockChartData() {
     );
 
     for (let i = 100; i >= 0; i--) {
-
-        const d = new Date(
-            today.getTime() -
-            i * 86400000
-        );
+        const date =
+            new Date(
+                today.getTime() -
+                i * 86400000
+            );
 
         const timeNum =
             Math.floor(
-                d.getTime() / 1000
+                date.getTime() / 1000
             );
 
         const change =
