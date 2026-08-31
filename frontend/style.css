@@ -28,11 +28,21 @@
     --transition: 0.2s ease;
 }
 
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
+
+
+/* =========================================================
+   HTML / BODY
+   ========================================================= */
 
 html {
     min-height: 100%;
@@ -40,38 +50,65 @@ html {
 
 body {
     min-height: 100vh;
+
     background-color: var(--bg-base);
+
     background-image:
         linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+
     background-size: 40px 40px;
+
     color: var(--text-primary);
     font-family: var(--font-main);
     line-height: 1.5;
+
     -webkit-font-smoothing: antialiased;
 }
 
-/* Main App Container */
+
+/* =========================================================
+   MAIN APP CONTAINER
+   ========================================================= */
 
 .app-container {
+    width: 100%;
     max-width: 1200px;
+
     margin: 0 auto;
     padding: 24px;
+
     display: flex;
     flex-direction: column;
+
     gap: 24px;
+
     min-height: 100vh;
+
+    /*
+     * Important:
+     * Prevent children from expanding the main container.
+     */
+    min-width: 0;
 }
 
-/* Header */
+
+/* =========================================================
+   HEADER
+   ========================================================= */
 
 .top-section {
     display: flex;
     justify-content: space-between;
     align-items: center;
+
     padding-bottom: 16px;
+
     border-bottom: 1px solid var(--border);
+
+    min-width: 0;
 }
+
 
 .logo {
     display: flex;
@@ -88,30 +125,50 @@ body {
     font-family: var(--font-pixel);
     font-size: 36px;
     font-weight: 700;
+
     letter-spacing: 1.5px;
+
     color: #fff;
+
     text-transform: uppercase;
 }
+
+
+/* =========================================================
+   CONTROLS
+   ========================================================= */
 
 .controls {
     display: flex;
     gap: 12px;
+
     align-items: center;
+
+    min-width: 0;
 }
 
 .custom-select select {
     appearance: none;
+
     background-color: var(--bg-input);
     color: #fff;
+
     border: 1px solid var(--border);
+
     padding: 10px 36px 10px 16px;
+
     font-family: var(--font-mono);
     font-size: 14px;
     font-weight: 500;
+
     border-radius: var(--radius);
+
     outline: none;
+
     cursor: pointer;
+
     background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23787B86%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+
     background-repeat: no-repeat;
     background-position: right 12px top 50%;
     background-size: 10px auto;
@@ -121,22 +178,37 @@ body {
     border-color: var(--border-light);
 }
 
+
+/* =========================================================
+   PRIMARY BUTTON
+   ========================================================= */
+
 .btn-primary {
     background-color: var(--accent);
     color: #000;
+
     border: 1px solid var(--accent);
+
     padding: 10px 24px;
+
     font-size: 14px;
     font-weight: 700;
+
     text-transform: uppercase;
     letter-spacing: 1px;
+
     border-radius: var(--radius);
+
     cursor: pointer;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     gap: 8px;
+
     transition: var(--transition);
+
     min-width: 150px;
 }
 
@@ -153,6 +225,7 @@ body {
     background-color: #111;
     border-color: #222;
     color: #666;
+
     cursor: not-allowed;
 }
 
@@ -162,68 +235,117 @@ body {
     color: #888;
 }
 
+
+/* =========================================================
+   BUTTON LOADER
+   ========================================================= */
+
 .btn-loader {
     width: 14px;
     height: 14px;
+
     border: 2px solid rgba(255,255,255,0.3);
     border-top-color: #fff;
+
     border-radius: 50%;
+
     animation: spin 0.8s linear infinite;
 }
 
-/* Main Content */
+
+/* =========================================================
+   MAIN CONTENT
+   ========================================================= */
 
 .main-content {
     display: flex;
     flex-direction: column;
+
     gap: 24px;
+
     min-height: 0;
+    min-width: 0;
+
+    width: 100%;
 }
 
-/* Cards Section */
+
+/* =========================================================
+   CARDS SECTION
+   ========================================================= */
 
 .cards-section {
     display: grid;
-    grid-template-columns: 1fr 1.5fr 1fr;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1.5fr)
+        minmax(0, 1fr);
+
     gap: 16px;
+
+    min-width: 0;
+    width: 100%;
 }
 
 .card {
     background-color: var(--bg-card);
+
     border: 1px solid var(--border);
     border-radius: var(--radius);
+
     padding: 20px;
+
     display: flex;
     flex-direction: column;
+
     justify-content: space-between;
+
+    min-width: 0;
 }
 
 .card-header {
     font-size: 12px;
+
     text-transform: uppercase;
+
     color: var(--text-secondary);
+
     font-weight: 600;
+
     letter-spacing: 0.5px;
+
     margin-bottom: 16px;
 }
 
-/* Decision Card */
+
+/* =========================================================
+   DECISION CARD
+   ========================================================= */
 
 .decision-card {
     border: 1px solid var(--border-light);
+
     box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+
     position: relative;
+
     overflow: hidden;
 }
 
 .decision-card::before {
     content: '';
+
     position: absolute;
+
     top: 0;
     left: 0;
+
     width: 4px;
     height: 100%;
+
     background-color: var(--color-hold);
+
     transition: var(--transition);
 }
 
@@ -237,33 +359,53 @@ body {
 
 .decision-value {
     font-size: 56px;
+
     font-family: var(--font-pixel);
     font-weight: 700;
+
     color: #fff;
+
     margin-bottom: 4px;
+
     letter-spacing: 2px;
+
     line-height: 1;
 }
 
 .decision-meta {
     font-family: var(--font-mono);
+
     font-size: 14px;
+
     color: var(--text-secondary);
+
     margin-bottom: 12px;
 }
 
 .decision-reason {
     font-size: 13px;
+
     color: var(--text-primary);
+
     background-color: rgba(255,255,255,0.03);
+
     padding: 12px;
+
     border-radius: var(--radius);
+
     border-left: 2px solid var(--text-secondary);
+
     min-height: 48px;
+
     overflow-wrap: anywhere;
+
+    min-width: 0;
 }
 
-/* Value Colors */
+
+/* =========================================================
+   VALUE COLORS
+   ========================================================= */
 
 .val-buy,
 .val-up {
@@ -294,129 +436,205 @@ body {
     background-color: var(--color-hold-bg) !important;
 }
 
-/* Prediction & Sentiment */
+
+/* =========================================================
+   PREDICTION & SENTIMENT
+   ========================================================= */
 
 .prediction-value {
     font-size: 56px;
+
     font-family: var(--font-pixel);
     font-weight: 700;
+
     margin-bottom: 4px;
+
     letter-spacing: 2px;
+
     line-height: 1;
 }
 
 .prediction-meta {
     display: flex;
     justify-content: space-between;
+
     font-family: var(--font-mono);
+
     font-size: 13px;
+
     color: var(--text-secondary);
 }
 
 .sentiment-score {
     font-family: var(--font-mono);
+
     font-size: 24px;
+
     font-weight: 600;
+
     margin-bottom: 12px;
 }
 
 .sentiment-gauge {
     height: 6px;
+
     background-color: var(--bg-input);
+
     border-radius: 3px;
+
     position: relative;
+
     margin-bottom: 8px;
+
     overflow: hidden;
 }
 
 .gauge-fill {
     height: 100%;
+
     background: linear-gradient(
         90deg,
         var(--color-sell),
         var(--color-hold),
         var(--color-buy)
     );
+
     width: 100%;
+
     position: absolute;
 }
 
 .gauge-marker {
     position: absolute;
+
     width: 4px;
     height: 10px;
+
     background-color: #fff;
+
     top: -2px;
     left: 50%;
+
     transform: translateX(-50%);
+
     border-radius: 1px;
-    transition: left 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    transition:
+        left 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .sentiment-label {
     font-size: 12px;
+
     color: var(--text-secondary);
+
     text-align: right;
 }
 
-/* Error State */
+
+/* =========================================================
+   ERROR STATE
+   ========================================================= */
 
 .error-banner {
     background-color: rgba(242, 54, 69, 0.1);
+
     border: 1px solid rgba(242, 54, 69, 0.3);
+
     color: var(--color-sell);
+
     padding: 12px 16px;
+
     border-radius: var(--radius);
+
     display: flex;
+
     align-items: center;
+
     gap: 8px;
+
     font-size: 13px;
+
     font-weight: 500;
+
+    min-width: 0;
 }
 
-/* News Section */
+
+/* =========================================================
+   NEWS SECTION
+   ========================================================= */
 
 .news-section {
+    width: 100%;
+    min-width: 0;
+
     background-color: var(--bg-card);
+
     border: 1px solid var(--border);
+
     border-radius: var(--radius);
+
     display: flex;
     flex-direction: column;
+
     flex-shrink: 0;
+
     overflow: hidden;
 }
 
 .news-header {
     display: flex;
+
     justify-content: space-between;
+
     align-items: center;
+
     padding: 16px;
+
     border-bottom: 1px solid var(--border);
+
     flex-shrink: 0;
+
+    min-width: 0;
 }
 
 .news-header h2 {
     font-size: 14px;
+
     font-weight: 600;
+
     color: #fff;
 }
 
 .news-subtitle {
     display: block;
+
     margin-top: 3px;
+
     font-size: 11px;
+
     color: var(--text-muted);
 }
 
 .news-refresh-btn {
     background: transparent;
+
     border: 1px solid var(--border);
+
     color: var(--text-secondary);
+
     padding: 6px 12px;
+
     font-family: var(--font-mono);
+
     font-size: 11px;
+
     cursor: pointer;
+
     transition: var(--transition);
+
+    flex-shrink: 0;
 }
 
 .news-refresh-btn:hover {
@@ -426,69 +644,114 @@ body {
 
 .news-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
     gap: 12px;
+
     padding: 16px;
+
     max-height: 230px;
+
     overflow-y: auto;
+    overflow-x: hidden;
+
+    min-width: 0;
 }
 
 .news-card {
     background-color: var(--bg-input);
+
     border: 1px solid var(--border);
+
     padding: 14px;
+
     display: flex;
     flex-direction: column;
+
     min-width: 0;
+
     min-height: 150px;
+
     transition: var(--transition);
+
+    overflow: hidden;
 }
 
 .news-card:hover {
     border-color: var(--border-light);
+
     background-color: var(--bg-card-hover);
 }
 
 .news-card-title {
     color: var(--text-primary);
+
     font-size: 13px;
+
     font-weight: 600;
+
     line-height: 1.4;
+
     margin-bottom: 8px;
+
     overflow-wrap: anywhere;
 }
 
 .news-card-content {
     color: var(--text-secondary);
+
     font-size: 11px;
+
     line-height: 1.5;
+
     margin-bottom: 12px;
+
     display: -webkit-box;
+
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
+
     overflow: hidden;
 }
 
 .news-card-footer {
     margin-top: auto;
+
     display: flex;
+
     justify-content: space-between;
+
     align-items: center;
+
     gap: 8px;
+
+    min-width: 0;
 }
 
 .news-date {
     color: var(--text-muted);
+
     font-family: var(--font-mono);
+
     font-size: 10px;
+
+    min-width: 0;
 }
 
 .news-link {
     color: var(--text-primary);
+
     font-size: 10px;
+
     text-decoration: none;
+
     border-bottom: 1px solid var(--border-light);
+
     white-space: nowrap;
+
+    flex-shrink: 0;
 }
 
 .news-link:hover {
@@ -499,62 +762,154 @@ body {
 .news-empty,
 .news-error {
     grid-column: 1 / -1;
+
     text-align: center;
+
     padding: 24px;
+
     color: var(--text-muted);
+
     font-size: 12px;
 }
 
-/* Bottom Section */
+
+/* =========================================================
+   BOTTOM SECTION
+   ========================================================= */
+
+/*
+ * IMPORTANT FIX
+ *
+ * minmax(0, ...) prevents the Prediction History
+ * table from forcing the entire grid wider than
+ * the News section above it.
+ */
 
 .bottom-section {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+
+    grid-template-columns:
+        minmax(0, 2fr)
+        minmax(0, 1fr);
+
     gap: 16px;
+
     min-height: 400px;
+
+    width: 100%;
+    min-width: 0;
+
+    /*
+     * Prevent grid children from overflowing
+     * because of their intrinsic content width.
+     */
+    overflow: hidden;
 }
+
+
+/*
+ * Critical:
+ * Grid items default to min-width: auto.
+ * Setting min-width: 0 allows them to shrink
+ * inside the available grid width.
+ */
+
+.bottom-section > .chart-container,
+.bottom-section > .history-container {
+    min-width: 0;
+    width: 100%;
+}
+
+
+/* =========================================================
+   CHART + HISTORY CONTAINERS
+   ========================================================= */
 
 .chart-container,
 .history-container {
     background-color: var(--bg-card);
+
     border: 1px solid var(--border);
+
     border-radius: var(--radius);
+
     display: flex;
     flex-direction: column;
+
     position: relative;
+
     min-height: 400px;
+
+    /*
+     * Prevent content from visually escaping
+     * the container.
+     */
+    min-width: 0;
+
+    max-width: 100%;
+
+    overflow: hidden;
 }
+
+
+/* =========================================================
+   CHART / HISTORY HEADERS
+   ========================================================= */
 
 .chart-header,
 .history-header {
     display: flex;
+
     justify-content: space-between;
+
     align-items: center;
+
     padding: 16px;
+
     border-bottom: 1px solid var(--border);
+
     flex-shrink: 0;
+
+    min-width: 0;
 }
 
 .chart-header h2,
 .history-header h2 {
     font-size: 14px;
+
     font-weight: 600;
+
     color: #fff;
 }
 
+
+/* =========================================================
+   CHART CONTROLS
+   ========================================================= */
+
 .chart-controls {
     display: flex;
+
     gap: 4px;
+
+    flex-shrink: 0;
 }
 
 .chart-btn {
     background: transparent;
+
     border: 1px solid transparent;
+
     color: var(--text-secondary);
+
     padding: 4px 10px;
+
     font-size: 12px;
+
     border-radius: var(--radius);
+
     cursor: pointer;
+
     transition: var(--transition);
 }
 
@@ -564,76 +919,195 @@ body {
 
 .chart-btn.active {
     background-color: var(--bg-input);
+
     border-color: var(--border-light);
+
     color: #fff;
 }
 
+
+/* =========================================================
+   TRADINGVIEW CHART
+   ========================================================= */
+
 .tv-chart {
     flex-grow: 1;
+
     width: 100%;
+
     min-height: 350px;
+
     position: relative;
+
+    min-width: 0;
+
+    overflow: hidden;
 }
 
-/* Prediction History */
+
+/* =========================================================
+   PREDICTION HISTORY
+   ========================================================= */
 
 .table-wrapper {
     flex-grow: 1;
+
+    width: 100%;
+
+    min-width: 0;
+    max-width: 100%;
+
     overflow-y: auto;
     overflow-x: auto;
+
+    /*
+     * Prevent the table wrapper from expanding
+     * the history grid item.
+     */
+    flex-shrink: 1;
 }
+
+
+/*
+ * IMPORTANT:
+ * Fixed table layout prevents long text/content
+ * from expanding the Prediction History container.
+ */
 
 table {
     width: 100%;
+
+    max-width: 100%;
+
     border-collapse: collapse;
+
     font-size: 12px;
+
+    table-layout: fixed;
+
+    min-width: 0;
 }
+
+
+/* =========================================================
+   TABLE HEADER
+   ========================================================= */
 
 th {
     text-align: left;
+
     padding: 12px 16px;
+
     color: var(--text-secondary);
+
     font-weight: 500;
+
     position: sticky;
+
     top: 0;
+
     background-color: var(--bg-card);
+
     border-bottom: 1px solid var(--border);
+
     z-index: 2;
+
+    /*
+     * Prevent header content from forcing
+     * the table wider.
+     */
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
 }
+
+
+/* =========================================================
+   TABLE CELLS
+   ========================================================= */
 
 td {
     padding: 12px 16px;
+
     border-bottom: 1px solid var(--bg-input);
+
     font-family: var(--font-mono);
+
+    /*
+     * Critical for long reason strings.
+     */
+    min-width: 0;
+
+    max-width: 0;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    vertical-align: middle;
 }
 
 tbody tr:hover {
     background-color: var(--bg-card-hover);
 }
 
+
+/* =========================================================
+   EMPTY TABLE
+   ========================================================= */
+
 .empty-row td {
     text-align: center;
+
     color: var(--text-muted);
+
     font-family: var(--font-main);
+
     padding: 32px;
+
+    max-width: none;
 }
+
+
+/* =========================================================
+   PREDICTION HISTORY REASON
+   ========================================================= */
 
 .expandable-reason {
     font-family: var(--font-main);
+
     font-size: 11px;
+
     color: var(--text-secondary);
+
     max-width: 150px;
+
     white-space: nowrap;
+
     overflow: hidden;
+
     text-overflow: ellipsis;
+
     cursor: help;
+
+    display: block;
 }
 
-/* Utilities */
+
+/* =========================================================
+   UTILITIES
+   ========================================================= */
 
 .hidden {
     display: none !important;
 }
+
+
+/* =========================================================
+   SPINNER
+   ========================================================= */
 
 @keyframes spin {
     to {
@@ -641,29 +1115,46 @@ tbody tr:hover {
     }
 }
 
+
+/* =========================================================
+   OVERLAY LOADER
+   ========================================================= */
+
 .overlay-loader {
     position: absolute;
+
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+
     background: rgba(19, 23, 34, 0.7);
+
     display: flex;
+
     align-items: center;
     justify-content: center;
+
     z-index: 10;
 }
 
 .spinner {
     width: 32px;
     height: 32px;
+
     border: 3px solid rgba(255,255,255,0.1);
+
     border-top-color: var(--accent);
+
     border-radius: 50%;
+
     animation: spin 1s linear infinite;
 }
 
-/* Scrollbar */
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
 
 ::-webkit-scrollbar {
     width: 6px;
@@ -676,6 +1167,7 @@ tbody tr:hover {
 
 ::-webkit-scrollbar-thumb {
     background: var(--border-light);
+
     border-radius: 3px;
 }
 
@@ -683,7 +1175,10 @@ tbody tr:hover {
     background: var(--text-muted);
 }
 
-/* Responsive */
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
 
 @media (max-width: 900px) {
 
@@ -693,35 +1188,53 @@ tbody tr:hover {
 
     .news-container {
         grid-template-columns: 1fr;
+
         max-height: none;
     }
 
     .bottom-section {
         grid-template-columns: 1fr;
+
         min-height: auto;
+
+        overflow: visible;
     }
 
     .chart-container,
     .history-container {
         min-height: 400px;
+
+        width: 100%;
+        max-width: 100%;
     }
 }
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
 
 @media (max-width: 600px) {
 
     .app-container {
+        width: 100%;
+
         padding: 16px;
+
         gap: 16px;
     }
 
     .top-section {
         flex-direction: column;
+
         align-items: flex-start;
+
         gap: 16px;
     }
 
     .controls {
         width: 100%;
+
         flex-direction: column;
     }
 
@@ -738,5 +1251,21 @@ tbody tr:hover {
     .decision-value,
     .prediction-value {
         font-size: 48px;
+    }
+
+    .news-container {
+        grid-template-columns: 1fr;
+    }
+
+    .history-container {
+        overflow: hidden;
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 500px;
     }
 }
