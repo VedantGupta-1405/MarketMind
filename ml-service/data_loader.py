@@ -30,4 +30,4 @@ def fetch_stock_data(stock_id, start="2015-01-01", end="2024-01-01"):
     except Exception as e:
         raise RuntimeError(
             f"Error fetching data for {ticker}: {str(e)}"
-        )
+        )   

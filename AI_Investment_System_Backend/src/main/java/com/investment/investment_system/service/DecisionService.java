@@ -9,12 +9,13 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 
-@Service // business logic for final decision
+@Service
 public class DecisionService {
 
-    private final DecisionRepository decisionRepository; // DB: decisions
-    private final SentimentRepository sentimentRepository; // DB: sentiment
+    private final DecisionRepository decisionRepository;
+    private final SentimentRepository sentimentRepository;
 
     public DecisionService(DecisionRepository decisionRepository,
                            SentimentRepository sentimentRepository) {
@@ -24,13 +25,11 @@ public class DecisionService {
 
     public Decision generateDecision(Prediction prediction) {
 
-        String predictionValue = prediction.getPrediction(); 
-        // ML output: "UP" / "DOWN"
+        String predictionValue = prediction.getPrediction();
 
-        double probability = prediction.getProbability(); 
-        // ML confidence
+        double probability = prediction.getProbability();
 
-        // 1. fetch latest sentiment for stock
+        // 1. Fetch latest sentiment for stock
         List<Sentiment> sentiments = sentimentRepository.findLatestByStockId(
                 prediction.getStock().getId()
         );
@@ -38,54 +37,81 @@ public class DecisionService {
         double sentimentScore = 0.0;
 
         if (!sentiments.isEmpty()) {
-            sentimentScore = sentiments.get(0).getScore(); 
-            // takes latest sentiment
+            sentimentScore = sentiments.get(0).getScore();
         }
 
-        // 2. decision logic (rule-based engine)
+        // Format sentiment for clean UI display
+        String formattedSentiment =
+                String.format(Locale.US, "%.2f", sentimentScore);
+
+        // 2. Decision logic
         String decisionValue;
         String reason;
 
         if ("UP".equalsIgnoreCase(predictionValue)) {
 
             if (sentimentScore > 0.5) {
-                decisionValue = "BUY"; // strong positive signal
-                reason = "Prediction is UP with strong positive sentiment (" + sentimentScore + ")";
+
+                decisionValue = "BUY";
+
+                reason = "Prediction is UP with strong positive sentiment ("
+                        + formattedSentiment + ")";
+
             } else if (sentimentScore > 0) {
-                decisionValue = "HOLD"; // weak positive
-                reason = "Prediction is UP but sentiment is weak (" + sentimentScore + ")";
+
+                decisionValue = "HOLD";
+
+                reason = "Prediction is UP but sentiment is weak ("
+                        + formattedSentiment + ")";
+
             } else {
-                decisionValue = "HOLD"; // negative sentiment overrides
-                reason = "Prediction is UP but sentiment is negative (" + sentimentScore + ")";
+
+                decisionValue = "HOLD";
+
+                reason = "Prediction is UP but sentiment is negative ("
+                        + formattedSentiment + ")";
             }
 
         } else if ("DOWN".equalsIgnoreCase(predictionValue)) {
 
             if (sentimentScore < -0.5) {
-                decisionValue = "SELL"; // strong negative signal
-                reason = "Prediction is DOWN with strong negative sentiment (" + sentimentScore + ")";
+
+                decisionValue = "SELL";
+
+                reason = "Prediction is DOWN with strong negative sentiment ("
+                        + formattedSentiment + ")";
+
             } else if (sentimentScore < 0) {
-                decisionValue = "HOLD"; // weak negative
-                reason = "Prediction is DOWN but sentiment is weak (" + sentimentScore + ")";
+
+                decisionValue = "HOLD";
+
+                reason = "Prediction is DOWN but sentiment is weak ("
+                        + formattedSentiment + ")";
+
             } else {
-                decisionValue = "HOLD"; // positive sentiment cancels sell
-                reason = "Prediction is DOWN but sentiment is positive (" + sentimentScore + ")";
+
+                decisionValue = "HOLD";
+
+                reason = "Prediction is DOWN but sentiment is positive ("
+                        + formattedSentiment + ")";
             }
 
         } else {
-            decisionValue = "HOLD"; // fallback for UNKNOWN
+
+            decisionValue = "HOLD";
             reason = "Prediction is uncertain";
         }
 
-        // 3. map → Decision entity
+        // 3. Create Decision entity
         Decision decision = new Decision();
-        decision.setDecision(decisionValue);
-        decision.setConfidence(probability); // uses ML probability
-        decision.setReason(reason); // explanation string (good for UI/debug)
-        decision.setCreatedAt(LocalDateTime.now());
-        decision.setStock(prediction.getStock()); // FK relation
 
-        return decisionRepository.save(decision); 
-        // persist decision in DB
+        decision.setDecision(decisionValue);
+        decision.setConfidence(probability);
+        decision.setReason(reason);
+        decision.setCreatedAt(LocalDateTime.now());
+        decision.setStock(prediction.getStock());
+
+        // 4. Persist decision
+        return decisionRepository.save(decision);
     }
 }
