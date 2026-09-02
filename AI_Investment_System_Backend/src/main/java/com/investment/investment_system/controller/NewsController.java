@@ -17,7 +17,6 @@ public class NewsController {
         this.newsService = newsService;
     }
 
-    // 🔥 ADD
     @PostMapping("/{stockId}")
     public ResponseEntity<News> addNews(
             @PathVariable Long stockId,
@@ -26,7 +25,6 @@ public class NewsController {
         return ResponseEntity.ok(newsService.addNews(stockId, news));
     }
 
-    // 🔥 GET
     @GetMapping("/{stockId}")
     public ResponseEntity<List<News>> getNews(@PathVariable Long stockId) {
         return ResponseEntity.ok(newsService.getNews(stockId));
