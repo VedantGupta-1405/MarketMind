@@ -21,7 +21,7 @@ def build_model(input_shape):
     return model
 
 
-# =========================
+# ========================= 
 # LOAD OR TRAIN MODEL
 # =========================
 def get_model():
