@@ -4,6 +4,7 @@ import yfinance as yf
 BACKEND_URL = "http://localhost:8080"
 
 STOCK_MAP = {
+    1: "AAPL",
     4: "GOOGL",
     5: "MSFT",
     6: "AMZN"
