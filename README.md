@@ -1,241 +1,211 @@
-# MarketMind — AI Investment System (Backend + ML)
+# MarketMind — AI Investment System
 
-##  Overview
+## Overview
 
-MarketMind is a full-stack AI-based investment decision system.
+MarketMind is a full-stack AI-based investment decision system that combines historical stock market data, machine learning predictions, financial news, sentiment analysis, and rule-based decision logic.
 
-This repository contains:
+The system consists of:
 
-* **Spring Boot Backend**
-* **FastAPI ML Service**
-* **PostgreSQL Database**
-* (Optional) Static Frontend
+- Spring Boot Backend
+- FastAPI ML Service
+- PostgreSQL Database
+- Static HTML/CSS/JavaScript Frontend
+- Lightweight Charts
 
 The system:
 
-* Fetches stock data
-* Runs ML prediction (UP/DOWN)
-* Combines with sentiment
-* Generates **BUY / SELL / HOLD decisions**
+- Fetches historical stock market data
+- Generates stock price movement predictions
+- Performs financial sentiment analysis
+- Combines prediction and sentiment
+- Generates BUY / SELL / HOLD decisions
+- Displays stock charts and financial news
+- Maintains prediction history
 
----
+## Tech Stack
 
-##  Tech Stack
+- Backend: Spring Boot
+- Language: Java
+- Database: PostgreSQL
+- ML Service: FastAPI
+- ML Language: Python
+- ML Model: LSTM using Keras
+- Sentiment Model: FinBERT
+- Market Data: yfinance
+- API Communication: REST
+- Frontend: HTML, CSS, JavaScript
+- Charts: Lightweight Charts
+- Build Tool: Maven
 
-* Backend: Spring Boot (Java)
-* Database: PostgreSQL
-* ML Service: FastAPI (Python)
-* ML Model: LSTM (Keras)
-* API Communication: REST
+## Project Structure
 
----
-
-##  Project Structure
-
-```id="5cv7rp"
+```text
 MarketMind/
 │
-├── AI_Investment_System_Backend/   → Spring Boot backend
-├── ml-service/                    → FastAPI ML service
-├── frontend/                      → Static UI (HTML/CSS/JS)
+├── AI_Investment_System_Backend/
+│   ├── src/
+│   ├── pom.xml
+│   └── README.md
+│
+├── ml-service/
+│   ├── main.py
+│   ├── model.py
+│   ├── preprocess.py
+│   ├── data_loader.py
+│   ├── sentiment.py
+│   ├── populate_price_history.py
+│   └── requirements.txt
+│
+└── frontend/
+    ├── index.html
+    ├── app.js
+    └── style.css
 ```
 
----
+## How to Run
 
-##  Prerequisites
+### 1. Start PostgreSQL
 
-Make sure you have installed:
+Make sure PostgreSQL is running and the `investment_system` database exists.
 
-* Java 17+
-* Maven
-* Python 3.9+
-* PostgreSQL
-* Git
+### 2. Start Spring Boot Backend
 
----
+Open a terminal:
 
-##  SETUP INSTRUCTIONS
-
----
-
-### 1. Clone Repository
-
-```bash id="i14d5u"
-git clone <your-repo-url>
-cd MarketMind
-```
-
----
-
-### 2. DATABASE SETUP
-
-#### Create DB in PostgreSQL:
-
-```sql id="9r9d3p"
-CREATE DATABASE investment_system;
-```
-
-#### Update credentials in:
-
-```id="kth0ye"
-AI_Investment_System_Backend/src/main/resources/application.properties
-```
-
-```properties id="7psr0h"
-spring.datasource.url=jdbc:postgresql://localhost:5432/investment_system
-spring.datasource.username=postgres
-spring.datasource.password=your_password
-
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-```
-
----
-
-### 3. RUN BACKEND (Spring Boot)
-
-```bash id="8r7d4g"
+```bash
 cd AI_Investment_System_Backend
 mvn spring-boot:run
 ```
 
- Runs on:
+Backend runs on:
 
-```id="pp1s7f"
+```text
 http://localhost:8080
 ```
 
----
+### 3. Start ML Service
 
-### 4. RUN ML SERVICE (FastAPI)
+Open a new terminal:
 
-```bash id="u6k0le"
+```bash
 cd ml-service
-```
-
-#### Create virtual environment:
-
-```bash id="8z0hcz"
-python -m venv venv
-```
-
-#### Activate:
-
-**Windows:**
-
-```bash id="m1x1qz"
 venv\Scripts\activate
 ```
 
-**Mac/Linux:**
+Install dependencies if required:
 
-```bash id="4f0v1d"
-source venv/bin/activate
-```
-
-#### Install dependencies:
-
-```bash id="c4a2wq"
+```bash
 pip install -r requirements.txt
 ```
 
-#### Run ML server:
+Start the FastAPI service:
 
-```bash id="8z0slr"
+```bash
 uvicorn main:app --reload
 ```
 
- Runs on:
+ML service runs on:
 
-```id="6r0xnm"
-http://127.0.0.1:8000
+```text
+http://localhost:8000
 ```
 
----
+### 4. Populate Price History
 
-### 5. RUN FRONTEND (Optional)
+This is only required if historical price data is missing from the database.
 
-```bash id="c0g2rf"
-cd frontend
+```bash
+python populate_price_history.py
 ```
 
-Open `index.html` using Live Server or browser:
+The script downloads historical stock data using yfinance and stores it through the Spring Boot backend.
 
-```id="r4o9pb"
-http://127.0.0.1:5500/frontend/index.html
+### 5. Start Frontend
+
+Open the `frontend` folder in VS Code and run `index.html` using Live Server.
+
+Frontend usually runs on:
+
+```text
+http://127.0.0.1:5500
 ```
 
----
+## Startup Order
 
-##  HOW SYSTEM WORKS
+```text
+PostgreSQL
+    ↓
+Spring Boot Backend
+    ↓
+FastAPI ML Service
+    ↓
+Frontend
+```
 
-1. User clicks **Analyze**
-2. Backend calls ML service
-3. ML returns:
+## Stock Mapping
 
-   * Prediction (UP/DOWN)
-   * Probability
-4. Backend:
+```text
+1 → AAPL
+4 → GOOGL
+5 → MSFT
+6 → AMZN
+```
 
-   * Saves prediction
-   * Fetches sentiment
-   * Generates decision
-5. UI displays:
+## Main Backend APIs
 
-   * Prediction
-   * Decision
-   * Charts
-
----
-
-##  API ENDPOINTS
-
-### Prediction
-
-```http id="1md0i5"
+```text
 POST /predictions/{stockId}
+GET  /price-history/{stockId}
+GET  /news/{stockId}
 ```
 
----
+## ML Service APIs
 
-### Price History
-
-```http id="3cr6kx"
-GET /price-history/{stockId}
+```text
+POST /predict
+POST /sentiment
 ```
 
----
+## System Flow
 
-### Transactions (if implemented)
-
-```http id="j5gl7p"
-POST /transactions
-GET /portfolio
+```text
+Stock Selection
+      ↓
+Spring Boot Backend
+      ↓
+Price Data + Financial News
+      ↓
+FastAPI ML Service
+      ↓
+LSTM Prediction + FinBERT Sentiment
+      ↓
+Decision Logic
+      ↓
+BUY / SELL / HOLD
+      ↓
+Frontend Dashboard
 ```
 
----
+## Features
 
-##  IMPORTANT NOTES
+- Stock selection
+- Historical price charts
+- Line, area, and candlestick charts
+- LSTM-based price movement prediction
+- Financial news scraping
+- FinBERT sentiment analysis
+- BUY / SELL / HOLD decision generation
+- Prediction probability
+- Market sentiment score
+- Prediction history
+- Multiple stock support
+- REST-based communication between services
 
-* ML service **must be running** before prediction
-* Backend depends on ML service
-* DB must be connected properly
-* If ML fails → fallback returns UNKNOWN
+## Important Notes
 
----
-
-##  FUTURE IMPROVEMENTS
-
-* Real sentiment API integration
-* Better ML model (training pipeline)
-* Auth system
-* Docker deployment
-* Real-time data streaming
-
----
-
-##  KEY FEATURE
-
-> This system does NOT just predict — it **generates actionable decisions**
-
----
+- PostgreSQL must be running before starting the backend.
+- Spring Boot must be running before using the frontend APIs.
+- FastAPI must be running for predictions and sentiment analysis.
+- `populate_price_history.py` only needs to be executed when price history is missing or needs to be populated.
+- The current LSTM model uses historical closing prices for prediction.
+- News sentiment is processed separately using FinBERT and is combined with the prediction through rule-based decision logic.
