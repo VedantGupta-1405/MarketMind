@@ -26,10 +26,8 @@ public class DecisionService {
     public Decision generateDecision(Prediction prediction) {
 
         String predictionValue = prediction.getPrediction();
-
         double probability = prediction.getProbability();
 
-        // 1. Fetch latest sentiment for stock
         List<Sentiment> sentiments = sentimentRepository.findLatestByStockId(
                 prediction.getStock().getId()
         );
@@ -40,59 +38,49 @@ public class DecisionService {
             sentimentScore = sentiments.get(0).getScore();
         }
 
-        // Format sentiment for clean UI display
         String formattedSentiment =
                 String.format(Locale.US, "%.2f", sentimentScore);
 
-        // 2. Decision logic
         String decisionValue;
         String reason;
 
         if ("UP".equalsIgnoreCase(predictionValue)) {
 
             if (sentimentScore > 0.5) {
-
                 decisionValue = "BUY";
-
                 reason = "Prediction is UP with strong positive sentiment ("
                         + formattedSentiment + ")";
-
             } else if (sentimentScore > 0) {
-
                 decisionValue = "HOLD";
-
                 reason = "Prediction is UP but sentiment is weak ("
                         + formattedSentiment + ")";
-
-            } else {
-
+            } else if (sentimentScore < 0) {
                 decisionValue = "HOLD";
-
                 reason = "Prediction is UP but sentiment is negative ("
+                        + formattedSentiment + ")";
+            } else {
+                decisionValue = "HOLD";
+                reason = "Prediction is UP but sentiment is neutral ("
                         + formattedSentiment + ")";
             }
 
         } else if ("DOWN".equalsIgnoreCase(predictionValue)) {
 
             if (sentimentScore < -0.5) {
-
                 decisionValue = "SELL";
-
                 reason = "Prediction is DOWN with strong negative sentiment ("
                         + formattedSentiment + ")";
-
             } else if (sentimentScore < 0) {
-
                 decisionValue = "HOLD";
-
                 reason = "Prediction is DOWN but sentiment is weak ("
                         + formattedSentiment + ")";
-
-            } else {
-
+            } else if (sentimentScore > 0) {
                 decisionValue = "HOLD";
-
                 reason = "Prediction is DOWN but sentiment is positive ("
+                        + formattedSentiment + ")";
+            } else {
+                decisionValue = "HOLD";
+                reason = "Prediction is DOWN but sentiment is neutral ("
                         + formattedSentiment + ")";
             }
 
@@ -102,7 +90,6 @@ public class DecisionService {
             reason = "Prediction is uncertain";
         }
 
-        // 3. Create Decision entity
         Decision decision = new Decision();
 
         decision.setDecision(decisionValue);
@@ -111,7 +98,6 @@ public class DecisionService {
         decision.setCreatedAt(LocalDateTime.now());
         decision.setStock(prediction.getStock());
 
-        // 4. Persist decision
         return decisionRepository.save(decision);
     }
 }
