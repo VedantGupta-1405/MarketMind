@@ -5,18 +5,23 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import numpy as np
 import pandas as pd
 import yfinance as yf
-import matplotlib
-
-matplotlib.use("Agg")
-
-import matplotlib.pyplot as plt
+import tensorflow as tf
 
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.metrics import (
+    accuracy_score,
+    balanced_accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    confusion_matrix,
+    matthews_corrcoef
+)
 
-import tensorflow as tf
 from keras.models import Sequential
 from keras.layers import LSTM, Dense, Input
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 
 np.random.seed(42)
@@ -30,17 +35,42 @@ STOCK_MAP = {
     6: "AMZN"
 }
 
-TRAIN_START = "2015-01-01"
-TRAIN_END = "2022-01-01"
 
-TEST_START = "2022-01-01"
-TEST_END = "2024-01-01"
+FEATURE_COLUMNS = [
+    "Open",
+    "High",
+    "Low",
+    "Close",
+    "Volume",
+    "Daily_Return",
+    "High_Low_Range",
+    "Open_Close_Return",
+    "Volatility_5",
+    "Volatility_10",
+    "Volatility_20"
+]
+
+
+TRAIN_START = pd.Timestamp("2015-01-01")
+TRAIN_END = pd.Timestamp("2022-01-01")
+
+TEST_START = pd.Timestamp("2022-01-01")
+TEST_END = pd.Timestamp("2024-01-01")
 
 WINDOW_SIZE = 60
-EPOCHS = 3
+FUTURE_DAYS = 5
+
+EPOCHS = 30
 BATCH_SIZE = 32
 
-OUTPUT_DIR = "evaluation_output"
+VALIDATION_RATIO = 0.15
+
+OUTPUT_DIR = "five_day_feature_evaluation_output"
+
+MODEL_DIR = os.path.join(
+    OUTPUT_DIR,
+    "models"
+)
 
 
 def fetch_stock_data(ticker):
@@ -53,31 +83,159 @@ def fetch_stock_data(ticker):
     )
 
     if data.empty:
-        raise RuntimeError(f"No data returned for {ticker}")
+        raise RuntimeError(
+            f"No data returned for {ticker}"
+        )
 
     if hasattr(data.columns, "levels"):
-        data.columns = [column[0] for column in data.columns]
+        data.columns = [
+            column[0]
+            for column in data.columns
+        ]
 
-    data = data[["Close"]].dropna()
+    required_columns = [
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume"
+    ]
+
+    missing_columns = [
+        column
+        for column in required_columns
+        if column not in data.columns
+    ]
+
+    if missing_columns:
+        raise RuntimeError(
+            f"Missing columns for {ticker}: "
+            f"{missing_columns}"
+        )
+
+    data = data[
+        required_columns
+    ].copy()
+
+    data = data.dropna()
+
+    data["Daily_Return"] = (
+        data["Close"]
+        .pct_change()
+    )
+
+    data["High_Low_Range"] = (
+        data["High"] - data["Low"]
+    ) / data["Close"]
+
+    data["Open_Close_Return"] = (
+        data["Close"] - data["Open"]
+    ) / data["Open"]
+
+    data["Volatility_5"] = (
+        data["Daily_Return"]
+        .rolling(window=5)
+        .std()
+    )
+
+    data["Volatility_10"] = (
+        data["Daily_Return"]
+        .rolling(window=10)
+        .std()
+    )
+
+    data["Volatility_20"] = (
+        data["Daily_Return"]
+        .rolling(window=20)
+        .std()
+    )
+
+    data = data.dropna()
 
     return data
 
 
-def create_sequences(data, window_size):
+def create_targets(close_prices):
+    target = np.full(
+        len(close_prices),
+        np.nan
+    )
+
+    target[
+        :-FUTURE_DAYS
+    ] = (
+        close_prices[
+            FUTURE_DAYS:
+        ] >
+        close_prices[
+            :-FUTURE_DAYS
+        ]
+    ).astype(
+        np.float32
+    )
+
+    return target
+
+
+def create_samples(
+    data,
+    feature_scaler
+):
+    features = data[
+        FEATURE_COLUMNS
+    ].values
+
+    close_prices = data[
+        "Close"
+    ].values
+
+    target = create_targets(
+        close_prices
+    )
+
+    scaled_features = (
+        feature_scaler.transform(
+            features
+        )
+    )
+
     X = []
     y = []
+    target_dates = []
 
-    for i in range(window_size, len(data)):
-        X.append(data[i - window_size:i])
-        y.append(data[i])
+    for i in range(
+        WINDOW_SIZE,
+        len(data) - FUTURE_DAYS
+    ):
+        X.append(
+            scaled_features[
+                i - WINDOW_SIZE:i
+            ]
+        )
 
-    return np.array(X), np.array(y)
+        y.append(
+            target[i]
+        )
+
+        target_dates.append(
+            data.index[i]
+        )
+
+    return (
+        np.array(X),
+        np.array(y),
+        np.array(target_dates)
+    )
 
 
 def build_model(input_shape):
     model = Sequential()
 
-    model.add(Input(shape=input_shape))
+    model.add(
+        Input(
+            shape=input_shape
+        )
+    )
 
     model.add(
         LSTM(
@@ -91,100 +249,218 @@ def build_model(input_shape):
     )
 
     model.add(
-        Dense(1)
+        Dense(
+            1,
+            activation="sigmoid"
+        )
     )
 
     model.compile(
         optimizer="adam",
-        loss="mean_squared_error"
+        loss="binary_crossentropy",
+        metrics=["accuracy"]
     )
 
     return model
 
 
-def evaluate_stock(stock_id, ticker):
+def evaluate_stock(
+    stock_id,
+    ticker
+):
     print()
     print("=" * 60)
-    print(f"Evaluating {ticker} (Stock ID: {stock_id})")
+    print(
+        f"Evaluating {ticker} "
+        f"(Stock ID: {stock_id})"
+    )
     print("=" * 60)
 
-    data = fetch_stock_data(ticker)
+    data = fetch_stock_data(
+        ticker
+    )
 
-    train_data = data.loc[
+    train_rows = data.loc[
         (data.index >= TRAIN_START) &
         (data.index < TRAIN_END)
     ]
 
-    test_data = data.loc[
+    test_rows = data.loc[
         (data.index >= TEST_START) &
         (data.index < TEST_END)
     ]
 
-    if len(train_data) <= WINDOW_SIZE:
+    if len(train_rows) <= (
+        WINDOW_SIZE + FUTURE_DAYS
+    ):
         raise RuntimeError(
-            f"Not enough training data for {ticker}"
+            f"Not enough training data "
+            f"for {ticker}"
         )
 
-    if len(test_data) == 0:
+    if len(test_rows) == 0:
         raise RuntimeError(
-            f"No test data available for {ticker}"
+            f"No test data available "
+            f"for {ticker}"
         )
 
-    train_values = train_data["Close"].values.reshape(-1, 1)
-
-    test_values = test_data["Close"].values.reshape(-1, 1)
-
-    scaler = MinMaxScaler(
-        feature_range=(0, 1)
+    validation_size = int(
+        len(train_rows)
+        * VALIDATION_RATIO
     )
 
-    scaled_train = scaler.fit_transform(
-        train_values
+    if validation_size <= WINDOW_SIZE:
+        raise RuntimeError(
+            f"Validation set is too small "
+            f"for {ticker}"
+        )
+
+    validation_start_index = (
+        len(train_rows)
+        - validation_size
     )
 
-    combined_values = np.concatenate(
-        [
-            train_values[-WINDOW_SIZE:],
-            test_values
+    validation_start_date = (
+        train_rows.index[
+            validation_start_index
         ]
     )
 
-    scaled_combined = scaler.transform(
-        combined_values
+    feature_scaler = MinMaxScaler(
+        feature_range=(0, 1)
     )
 
-    X_test = []
-    y_test = []
+    feature_scaler.fit(
+        train_rows[
+            FEATURE_COLUMNS
+        ].values[
+            :validation_start_index
+        ]
+    )
 
-    for i in range(
-        WINDOW_SIZE,
-        len(scaled_combined)
-    ):
-        X_test.append(
-            scaled_combined[
-                i - WINDOW_SIZE:i
-            ]
+    (
+        X_all,
+        y_all,
+        target_dates
+    ) = create_samples(
+        data,
+        feature_scaler
+    )
+
+    train_mask = (
+        (target_dates >= TRAIN_START) &
+        (target_dates < validation_start_date)
+    )
+
+    validation_mask = (
+        (target_dates >= validation_start_date) &
+        (target_dates < TRAIN_END)
+    )
+
+    test_mask = (
+        (target_dates >= TEST_START) &
+        (target_dates < TEST_END)
+    )
+
+    X_train = X_all[
+        train_mask
+    ]
+
+    y_train = y_all[
+        train_mask
+    ]
+
+    X_validation = X_all[
+        validation_mask
+    ]
+
+    y_validation = y_all[
+        validation_mask
+    ]
+
+    X_test = X_all[
+        test_mask
+    ]
+
+    y_test = y_all[
+        test_mask
+    ]
+
+    test_dates = target_dates[
+        test_mask
+    ]
+
+    if len(X_train) == 0:
+        raise RuntimeError(
+            f"No training samples "
+            f"generated for {ticker}"
         )
 
-        y_test.append(
-            scaled_combined[i]
+    if len(X_validation) == 0:
+        raise RuntimeError(
+            f"No validation samples "
+            f"generated for {ticker}"
         )
 
-    X_test = np.array(X_test)
+    if len(X_test) == 0:
+        raise RuntimeError(
+            f"No test samples "
+            f"generated for {ticker}"
+        )
 
-    y_test = np.array(y_test)
-
-    X_train, y_train = create_sequences(
-        scaled_train,
-        WINDOW_SIZE
+    print(
+        f"Training samples: "
+        f"{len(X_train)}"
     )
 
     print(
-        f"Training samples: {len(X_train)}"
+        f"Validation samples: "
+        f"{len(X_validation)}"
     )
 
     print(
-        f"Testing samples: {len(X_test)}"
+        f"Testing samples: "
+        f"{len(X_test)}"
+    )
+
+    print(
+        f"Input features: "
+        f"{len(FEATURE_COLUMNS)}"
+    )
+
+    print(
+        f"Future prediction horizon: "
+        f"{FUTURE_DAYS} trading days"
+    )
+
+    print(
+        f"Training UP samples: "
+        f"{int(np.sum(y_train == 1))}"
+    )
+
+    print(
+        f"Training DOWN samples: "
+        f"{int(np.sum(y_train == 0))}"
+    )
+
+    print(
+        f"Validation UP samples: "
+        f"{int(np.sum(y_validation == 1))}"
+    )
+
+    print(
+        f"Validation DOWN samples: "
+        f"{int(np.sum(y_validation == 0))}"
+    )
+
+    print(
+        f"Test UP samples: "
+        f"{int(np.sum(y_test == 1))}"
+    )
+
+    print(
+        f"Test DOWN samples: "
+        f"{int(np.sum(y_test == 0))}"
     )
 
     model = build_model(
@@ -194,82 +470,218 @@ def evaluate_stock(stock_id, ticker):
         )
     )
 
-    print()
-    print(f"Training {ticker}...")
+    os.makedirs(
+        MODEL_DIR,
+        exist_ok=True
+    )
 
-    model.fit(
+    model_path = os.path.join(
+        MODEL_DIR,
+        f"{ticker}_five_day_features_best.keras"
+    )
+
+    checkpoint = ModelCheckpoint(
+        model_path,
+        monitor="val_loss",
+        save_best_only=True,
+        mode="min",
+        verbose=1
+    )
+
+    early_stopping = EarlyStopping(
+        monitor="val_loss",
+        patience=5,
+        mode="min",
+        restore_best_weights=True,
+        verbose=1
+    )
+
+    print()
+    print(
+        f"Training {ticker} "
+        f"with 5-day OHLCV + derived features classification..."
+    )
+
+    history = model.fit(
         X_train,
         y_train,
+        validation_data=(
+            X_validation,
+            y_validation
+        ),
         epochs=EPOCHS,
         batch_size=BATCH_SIZE,
         verbose=1,
-        shuffle=False
+        shuffle=False,
+        callbacks=[
+            checkpoint,
+            early_stopping
+        ]
     )
 
     print()
     print(
-        f"Generating predictions for {ticker}..."
+        f"Generating predictions "
+        f"for {ticker}..."
     )
 
-    predictions_scaled = model.predict(
+    probabilities = model.predict(
         X_test,
         verbose=0
-    )
-
-    predictions = scaler.inverse_transform(
-        predictions_scaled
     ).flatten()
 
-    actual_values = test_values.flatten()
+    predictions = (
+        probabilities >= 0.5
+    ).astype(int)
 
-    mae = mean_absolute_error(
+    actual_values = y_test.astype(
+        int
+    )
+
+    accuracy = accuracy_score(
         actual_values,
         predictions
     )
 
-    mse = mean_squared_error(
+    balanced_accuracy = (
+        balanced_accuracy_score(
+            actual_values,
+            predictions
+        )
+    )
+
+    precision = precision_score(
+        actual_values,
+        predictions,
+        zero_division=0
+    )
+
+    recall = recall_score(
+        actual_values,
+        predictions,
+        zero_division=0
+    )
+
+    f1 = f1_score(
+        actual_values,
+        predictions,
+        zero_division=0
+    )
+
+    try:
+        roc_auc = roc_auc_score(
+            actual_values,
+            probabilities
+        )
+    except ValueError:
+        roc_auc = float("nan")
+
+    mcc = matthews_corrcoef(
         actual_values,
         predictions
     )
 
-    rmse = np.sqrt(mse)
-
-    previous_prices = combined_values[
-        WINDOW_SIZE - 1:-1
-    ].flatten()
-
-    actual_direction = (
-        actual_values > previous_prices
+    matrix = confusion_matrix(
+        actual_values,
+        predictions,
+        labels=[0, 1]
     )
 
-    predicted_direction = (
-        predictions > previous_prices
+    true_negative = matrix[0][0]
+    false_positive = matrix[0][1]
+    false_negative = matrix[1][0]
+    true_positive = matrix[1][1]
+
+    down_count = int(
+        np.sum(actual_values == 0)
     )
 
-    directional_accuracy = (
-        np.mean(
-            actual_direction ==
-            predicted_direction
-        ) * 100
+    up_count = int(
+        np.sum(actual_values == 1)
+    )
+
+    majority_baseline = (
+        max(
+            down_count,
+            up_count
+        )
+        / len(actual_values)
     )
 
     print()
-    print(f"{ticker} Results")
     print(
-        f"MAE: {mae:.4f}"
+        f"{ticker} 5-Day Feature Classification Results"
     )
 
     print(
-        f"MSE: {mse:.4f}"
+        f"Accuracy: "
+        f"{accuracy * 100:.2f}%"
     )
 
     print(
-        f"RMSE: {rmse:.4f}"
+        f"Balanced Accuracy: "
+        f"{balanced_accuracy * 100:.2f}%"
     )
 
     print(
-        f"Directional Accuracy: "
-        f"{directional_accuracy:.2f}%"
+        f"Precision: "
+        f"{precision * 100:.2f}%"
+    )
+
+    print(
+        f"Recall: "
+        f"{recall * 100:.2f}%"
+    )
+
+    print(
+        f"F1-Score: "
+        f"{f1 * 100:.2f}%"
+    )
+
+    print(
+        f"ROC-AUC: "
+        f"{roc_auc:.4f}"
+    )
+
+    print(
+        f"MCC: "
+        f"{mcc:.4f}"
+    )
+
+    print(
+        f"Majority Baseline: "
+        f"{majority_baseline * 100:.2f}%"
+    )
+
+    print()
+    print(
+        "Confusion Matrix:"
+    )
+
+    print(
+        "                 Predicted"
+    )
+
+    print(
+        "                 DOWN    UP"
+    )
+
+    print(
+        f"Actual DOWN      "
+        f"{true_negative:5d}  "
+        f"{false_positive:5d}"
+    )
+
+    print(
+        f"Actual UP        "
+        f"{false_negative:5d}  "
+        f"{true_positive:5d}"
+    )
+
+    print()
+    print(
+        f"Best model saved to: "
+        f"{model_path}"
     )
 
     os.makedirs(
@@ -278,75 +690,50 @@ def evaluate_stock(stock_id, ticker):
     )
 
     result_data = pd.DataFrame({
-        "Date": test_data.index,
+        "Date": test_dates,
         "Actual": actual_values,
-        "Predicted": predictions
+        "Predicted": predictions,
+        "Probability_UP": probabilities
     })
 
     result_data.to_csv(
         os.path.join(
             OUTPUT_DIR,
-            f"{ticker}_predictions.csv"
+            f"{ticker}_five_day_feature_predictions.csv"
         ),
         index=False
     )
 
-    plt.figure(
-        figsize=(12, 6)
-    )
-
-    plt.plot(
-        test_data.index,
-        actual_values,
-        label="Actual Price"
-    )
-
-    plt.plot(
-        test_data.index,
-        predictions,
-        label="Predicted Price"
-    )
-
-    plt.title(
-        f"{ticker} Actual vs Predicted Stock Price"
-    )
-
-    plt.xlabel(
-        "Date"
-    )
-
-    plt.ylabel(
-        "Closing Price"
-    )
-
-    plt.legend()
-
-    plt.tight_layout()
-
-    plt.savefig(
-        os.path.join(
-            OUTPUT_DIR,
-            f"{ticker}_actual_vs_predicted.png"
-        ),
-        dpi=300
-    )
-
-    plt.close("all")
-
     return {
         "Stock": ticker,
         "Stock ID": stock_id,
-        "MAE": mae,
-        "MSE": mse,
-        "RMSE": rmse,
-        "Directional Accuracy":
-            directional_accuracy
+        "Accuracy": accuracy * 100,
+        "Balanced Accuracy":
+            balanced_accuracy * 100,
+        "Precision": precision * 100,
+        "Recall": recall * 100,
+        "F1-Score": f1 * 100,
+        "ROC-AUC": roc_auc,
+        "MCC": mcc,
+        "Majority Baseline":
+            majority_baseline * 100,
+        "True Negative": true_negative,
+        "False Positive": false_positive,
+        "False Negative": false_negative,
+        "True Positive": true_positive,
+        "Best Epoch":
+            len(history.history["loss"])
     }
 
 
 def main():
     os.makedirs(
         OUTPUT_DIR,
+        exist_ok=True
+    )
+
+    os.makedirs(
+        MODEL_DIR,
         exist_ok=True
     )
 
@@ -386,14 +773,16 @@ def main():
     results_df.to_csv(
         os.path.join(
             OUTPUT_DIR,
-            "evaluation_results.csv"
+            "five_day_feature_evaluation_results.csv"
         ),
         index=False
     )
 
     print()
     print("=" * 60)
-    print("FINAL EVALUATION RESULTS")
+    print(
+        "FINAL 5-DAY FEATURE CLASSIFICATION RESULTS"
+    )
     print("=" * 60)
 
     print(
@@ -405,12 +794,17 @@ def main():
     print()
     print(
         "Results saved to: "
-        "evaluation_output/evaluation_results.csv"
+        "five_day_feature_evaluation_output/"
     )
 
     print(
-        "Graphs saved to: "
-        "evaluation_output/"
+        "Prediction files saved to: "
+        "five_day_feature_evaluation_output/"
+    )
+
+    print(
+        "Models saved to: "
+        "five_day_feature_evaluation_output/models/"
     )
 
 
