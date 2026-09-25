@@ -20,7 +20,13 @@ from sklearn.metrics import (
 )
 
 from keras.models import Sequential
-from keras.layers import LSTM, Dense, Input
+from keras.layers import (
+    Conv1D,
+    MaxPooling1D,
+    LSTM,
+    Dense,
+    Input
+)
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 
@@ -65,7 +71,7 @@ BATCH_SIZE = 32
 
 VALIDATION_RATIO = 0.15
 
-OUTPUT_DIR = "five_day_feature_evaluation_output"
+OUTPUT_DIR = "cnn_lstm_evaluation_output"
 
 MODEL_DIR = os.path.join(
     OUTPUT_DIR,
@@ -234,6 +240,20 @@ def build_model(input_shape):
     model.add(
         Input(
             shape=input_shape
+        )
+    )
+
+    model.add(
+        Conv1D(
+            filters=64,
+            kernel_size=3,
+            activation="relu"
+        )
+    )
+
+    model.add(
+        MaxPooling1D(
+            pool_size=2
         )
     )
 
@@ -477,7 +497,7 @@ def evaluate_stock(
 
     model_path = os.path.join(
         MODEL_DIR,
-        f"{ticker}_five_day_features_best.keras"
+        f"{ticker}_cnn_lstm_best.keras"
     )
 
     checkpoint = ModelCheckpoint(
@@ -499,7 +519,7 @@ def evaluate_stock(
     print()
     print(
         f"Training {ticker} "
-        f"with 5-day OHLCV + derived features classification..."
+        f"with CNN + LSTM 5-day classification..."
     )
 
     history = model.fit(
@@ -610,7 +630,7 @@ def evaluate_stock(
 
     print()
     print(
-        f"{ticker} 5-Day Feature Classification Results"
+        f"{ticker} CNN + LSTM 5-Day Classification Results"
     )
 
     print(
@@ -699,7 +719,7 @@ def evaluate_stock(
     result_data.to_csv(
         os.path.join(
             OUTPUT_DIR,
-            f"{ticker}_five_day_feature_predictions.csv"
+            f"{ticker}_cnn_lstm_predictions.csv"
         ),
         index=False
     )
@@ -773,7 +793,7 @@ def main():
     results_df.to_csv(
         os.path.join(
             OUTPUT_DIR,
-            "five_day_feature_evaluation_results.csv"
+            "cnn_lstm_evaluation_results.csv"
         ),
         index=False
     )
@@ -781,7 +801,7 @@ def main():
     print()
     print("=" * 60)
     print(
-        "FINAL 5-DAY FEATURE CLASSIFICATION RESULTS"
+        "FINAL CNN + LSTM 5-DAY CLASSIFICATION RESULTS"
     )
     print("=" * 60)
 
@@ -794,17 +814,17 @@ def main():
     print()
     print(
         "Results saved to: "
-        "five_day_feature_evaluation_output/"
+        "cnn_lstm_evaluation_output/"
     )
 
     print(
         "Prediction files saved to: "
-        "five_day_feature_evaluation_output/"
+        "cnn_lstm_evaluation_output/"
     )
 
     print(
         "Models saved to: "
-        "five_day_feature_evaluation_output/models/"
+        "cnn_lstm_evaluation_output/models/"
     )
 
 
