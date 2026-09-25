@@ -19,13 +19,14 @@ from sklearn.metrics import (
     matthews_corrcoef
 )
 
-from keras.models import Sequential
+from keras.models import Model
 from keras.layers import (
     Conv1D,
     MaxPooling1D,
     LSTM,
     Dense,
-    Input
+    Input,
+    Attention
 )
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 
@@ -66,12 +67,12 @@ TEST_END = pd.Timestamp("2024-01-01")
 WINDOW_SIZE = 60
 FUTURE_DAYS = 5
 
-EPOCHS = 30
+EPOCHS = 50
 BATCH_SIZE = 32
 
 VALIDATION_RATIO = 0.15
 
-OUTPUT_DIR = "cnn_lstm_evaluation_output"
+OUTPUT_DIR = "attention_evaluation_output"
 
 MODEL_DIR = os.path.join(
     OUTPUT_DIR,
@@ -235,44 +236,42 @@ def create_samples(
 
 
 def build_model(input_shape):
-    model = Sequential()
-
-    model.add(
-        Input(
-            shape=input_shape
-        )
+    inputs = Input(
+        shape=input_shape
     )
 
-    model.add(
-        Conv1D(
-            filters=64,
-            kernel_size=3,
-            activation="relu"
-        )
-    )
+    x = Conv1D(
+        filters=64,
+        kernel_size=3,
+        activation="relu"
+    )(inputs)
 
-    model.add(
-        MaxPooling1D(
-            pool_size=2
-        )
-    )
+    x = MaxPooling1D(
+        pool_size=2
+    )(x)
 
-    model.add(
-        LSTM(
-            50,
-            return_sequences=True
-        )
-    )
+    x = LSTM(
+        50,
+        return_sequences=True
+    )(x)
 
-    model.add(
-        LSTM(50)
-    )
+    attention_output = Attention()([
+        x,
+        x
+    ])
 
-    model.add(
-        Dense(
-            1,
-            activation="sigmoid"
-        )
+    x = LSTM(
+        50
+    )(attention_output)
+
+    outputs = Dense(
+        1,
+        activation="sigmoid"
+    )(x)
+
+    model = Model(
+        inputs=inputs,
+        outputs=outputs
     )
 
     model.compile(
@@ -497,7 +496,7 @@ def evaluate_stock(
 
     model_path = os.path.join(
         MODEL_DIR,
-        f"{ticker}_cnn_lstm_best.keras"
+        f"{ticker}_attention_best.keras"
     )
 
     checkpoint = ModelCheckpoint(
@@ -519,7 +518,7 @@ def evaluate_stock(
     print()
     print(
         f"Training {ticker} "
-        f"with CNN + LSTM 5-day classification..."
+        f"with CNN + LSTM + Attention 5-day classification..."
     )
 
     history = model.fit(
@@ -630,7 +629,7 @@ def evaluate_stock(
 
     print()
     print(
-        f"{ticker} CNN + LSTM 5-Day Classification Results"
+        f"{ticker} CNN + LSTM + Attention 5-Day Classification Results"
     )
 
     print(
@@ -719,7 +718,7 @@ def evaluate_stock(
     result_data.to_csv(
         os.path.join(
             OUTPUT_DIR,
-            f"{ticker}_cnn_lstm_predictions.csv"
+            f"{ticker}_attention_predictions.csv"
         ),
         index=False
     )
@@ -793,7 +792,7 @@ def main():
     results_df.to_csv(
         os.path.join(
             OUTPUT_DIR,
-            "cnn_lstm_evaluation_results.csv"
+            "attention_evaluation_results.csv"
         ),
         index=False
     )
@@ -801,7 +800,7 @@ def main():
     print()
     print("=" * 60)
     print(
-        "FINAL CNN + LSTM 5-DAY CLASSIFICATION RESULTS"
+        "FINAL CNN + LSTM + ATTENTION 5-DAY CLASSIFICATION RESULTS"
     )
     print("=" * 60)
 
@@ -814,17 +813,17 @@ def main():
     print()
     print(
         "Results saved to: "
-        "cnn_lstm_evaluation_output/"
+        "attention_evaluation_output/"
     )
 
     print(
         "Prediction files saved to: "
-        "cnn_lstm_evaluation_output/"
+        "attention_evaluation_output/"
     )
 
     print(
         "Models saved to: "
-        "cnn_lstm_evaluation_output/models/"
+        "attention_evaluation_output/models/"
     )
 
 
