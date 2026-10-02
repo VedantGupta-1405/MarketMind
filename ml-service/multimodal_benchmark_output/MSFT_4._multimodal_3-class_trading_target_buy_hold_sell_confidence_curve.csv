@@ -1,0 +1,3 @@
+confidence_threshold,coverage_pct,traded_samples,directional_accuracy,win_rate,avg_trade_return_pct,total_strategy_return_pct,annualized_sharpe
+0.4,41.34,203,40.39,56.16,0.488,98.99,0.52
+0.425,13.24,65,44.62,67.69,1.503,97.7,2.45
