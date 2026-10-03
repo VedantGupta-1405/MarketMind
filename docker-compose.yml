@@ -1,0 +1,81 @@
+services:
+  # Database Service
+  postgres:
+    image: postgres:15-alpine
+    container_name: marketmind-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-investment_system}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./AI_Investment_System_Backend/src/main/resources/db.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-investment_system}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - marketmind-network
+
+  # FastAPI Machine Learning & Sentiment Service
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    container_name: marketmind-ml-service
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8000:8000"
+    networks:
+      - marketmind-network
+
+  # Spring Boot Backend API
+  backend:
+    build:
+      context: ./AI_Investment_System_Backend
+      dockerfile: Dockerfile
+    container_name: marketmind-backend
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-investment_system}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      ML_SERVICE_URL: http://ml-service:8000
+      FINNHUB_API_KEY: ${FINNHUB_API_KEY:-}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ml-service:
+        condition: service_started
+    networks:
+      - marketmind-network
+
+  # Frontend Web UI
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: marketmind-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - marketmind-network
+
+networks:
+  marketmind-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local

@@ -3,9 +3,15 @@ const PREDICTION_COOLDOWN = 15;
 
 const elements = {
     stockSelector: document.getElementById('stockSelector'),
+    newsBtn: document.getElementById('newsBtn'),
+    backToAnalysisBtn: document.getElementById('backToAnalysisBtn'),
     analyzeBtn: document.getElementById('analyzeBtn'),
-    btnText: document.querySelector('.btn-text'),
-    btnLoader: document.querySelector('.btn-loader'),
+    btnText: document.querySelector('#analyzeBtn .btn-text'),
+    btnLoader: document.querySelector('#analyzeBtn .btn-loader'),
+    analysisView: document.getElementById('analysisView'),
+    newsView: document.getElementById('newsView'),
+    newsCompanyTitle: document.getElementById('newsCompanyTitle'),
+    newsTickerSubtitle: document.getElementById('newsTickerSubtitle'),
     predValue: document.getElementById('predValue'),
     predConfidence: document.getElementById('predConfidence'),
     predTimestamp: document.getElementById('predTimestamp'),
@@ -34,6 +40,14 @@ const stockIdMap = {
     AMZN: 6
 };
 
+const companyNames = {
+    AAPL: 'APPLE',
+    GOOGL: 'ALPHABET',
+    MSFT: 'MICROSOFT',
+    AMZN: 'AMAZON'
+};
+
+let currentView = 'analysis';
 let chart = null;
 let series = null;
 let currentChartType = 'line';
@@ -53,20 +67,44 @@ function initApp() {
 
     initChart();
     loadStockData();
-    loadNews();
     updateAnalyzeButton();
+    updateNewsHeader();
 
     elements.stockSelector.addEventListener('change', () => {
+        updateNewsHeader();
         resetCards();
         showError(false);
-        loadStockData();
-        loadNews();
+
+        if (currentView === 'analysis') {
+            loadStockData();
+        } else if (currentView === 'news') {
+            loadNews();
+        }
     });
 
-    elements.analyzeBtn.addEventListener(
-        'click',
-        performAnalysis
-    );
+    if (elements.newsBtn) {
+        elements.newsBtn.addEventListener('click', () => {
+            if (currentView === 'news') {
+                switchView('analysis');
+            } else {
+                switchView('news');
+            }
+        });
+    }
+
+    if (elements.backToAnalysisBtn) {
+        elements.backToAnalysisBtn.addEventListener('click', () => {
+            switchView('analysis');
+        });
+    }
+
+    elements.analyzeBtn.addEventListener('click', () => {
+        if (currentView === 'news') {
+            switchView('analysis');
+        } else {
+            performAnalysis();
+        }
+    });
 
     if (elements.refreshNewsBtn) {
         elements.refreshNewsBtn.addEventListener(
@@ -90,19 +128,88 @@ function initApp() {
     });
 }
 
+function switchView(viewName) {
+    if (viewName === currentView) {
+        return;
+    }
+
+    currentView = viewName;
+
+    if (viewName === 'news') {
+        if (elements.analysisView) {
+            elements.analysisView.classList.add('hidden');
+        }
+        if (elements.newsView) {
+            elements.newsView.classList.remove('hidden');
+        }
+        if (elements.newsBtn) {
+            elements.newsBtn.classList.add('active');
+        }
+        if (elements.analyzeBtn) {
+            elements.analyzeBtn.classList.remove('active');
+        }
+
+        updateNewsHeader();
+        loadNews();
+    } else {
+        if (elements.newsView) {
+            elements.newsView.classList.add('hidden');
+        }
+        if (elements.analysisView) {
+            elements.analysisView.classList.remove('hidden');
+        }
+        if (elements.newsBtn) {
+            elements.newsBtn.classList.remove('active');
+        }
+        if (elements.analyzeBtn) {
+            elements.analyzeBtn.classList.add('active');
+        }
+
+        setTimeout(() => {
+            resizeChart();
+            if (currentData && currentData.length > 0) {
+                updateChartSeries();
+            } else {
+                loadStockData();
+            }
+        }, 50);
+    }
+}
+
+function updateNewsHeader() {
+    const symbol = elements.stockSelector ? elements.stockSelector.value : 'AAPL';
+    const company = companyNames[symbol] || symbol;
+
+    if (elements.newsCompanyTitle) {
+        elements.newsCompanyTitle.textContent = `${company} NEWS`;
+    }
+
+    if (elements.newsTickerSubtitle) {
+        elements.newsTickerSubtitle.textContent = `Latest financial news for ${symbol}`;
+    }
+}
+
 function getStockId() {
     const symbol = elements.stockSelector.value;
     return stockIdMap[symbol] || 1;
 }
 
 function initChart() {
+    console.log("typeof LightweightCharts:", typeof LightweightCharts);
+    if (typeof LightweightCharts !== 'undefined') {
+        console.log("typeof LightweightCharts.createChart:", typeof LightweightCharts.createChart);
+        console.log("typeof LightweightCharts.LineSeries:", typeof LightweightCharts.LineSeries);
+    }
+
     if (
         !elements.chartContainer ||
         typeof LightweightCharts === 'undefined'
     ) {
-        console.error('LightweightCharts is not available.');
+        console.error('LightweightCharts is not available or chart container missing.');
         return;
     }
+
+    elements.chartContainer.innerHTML = '';
 
     chart = LightweightCharts.createChart(
         elements.chartContainer,
@@ -115,7 +222,7 @@ function initChart() {
                     type: 'solid',
                     color: 'transparent'
                 },
-                textColor: '#787B86',
+                textColor: '#D1D4DC',
                 fontFamily: "'Inter', sans-serif"
             },
             grid: {
@@ -127,20 +234,22 @@ function initChart() {
                 }
             },
             rightPriceScale: {
-                borderVisible: false,
+                borderVisible: true,
+                borderColor: '#2A2E39',
+                visible: true,
                 scaleMargins: {
                     top: 0.1,
                     bottom: 0.1
                 }
             },
             timeScale: {
-                borderVisible: false,
-                timeVisible: true,
+                borderVisible: true,
+                borderColor: '#2A2E39',
+                visible: true,
+                timeVisible: false,
                 secondsVisible: false,
                 rightOffset: 5,
-                barSpacing: 8,
-                fixLeftEdge: false,
-                fixRightEdge: false
+                barSpacing: 8
             },
             crosshair: {
                 mode: LightweightCharts.CrosshairMode.Normal
@@ -150,21 +259,31 @@ function initChart() {
         }
     );
 
+    series = chart.addSeries(
+        LightweightCharts.LineSeries,
+        {
+            color: '#2962FF',
+            lineWidth: 2,
+            priceLineVisible: true,
+            lastValueVisible: true
+        }
+    );
+
+    console.log("CHART CREATED:", chart);
+    console.log("SERIES CREATED:", series);
+    console.log("CHART CONTAINER:", elements.chartContainer);
+    console.log("WIDTH:", elements.chartContainer ? elements.chartContainer.clientWidth : 'null');
+    console.log("HEIGHT:", elements.chartContainer ? elements.chartContainer.clientHeight : 'null');
+
     if (typeof ResizeObserver !== 'undefined') {
         const resizeObserver = new ResizeObserver(() => {
             if (
                 chart &&
                 elements.chartContainer
             ) {
-                const width =
-                    elements.chartContainer.clientWidth;
-
-                const height =
-                    elements.chartContainer.clientHeight;
-
                 chart.applyOptions({
-                    width: Math.max(width, 300),
-                    height: Math.max(height, 300)
+                    width: Math.max(elements.chartContainer.clientWidth, 300),
+                    height: Math.max(elements.chartContainer.clientHeight, 300)
                 });
             }
         });
@@ -178,8 +297,6 @@ function initChart() {
             resizeChart
         );
     }
-
-    changeChartType('line');
 }
 
 function resizeChart() {
@@ -190,15 +307,9 @@ function resizeChart() {
         return;
     }
 
-    const width =
-        elements.chartContainer.clientWidth;
-
-    const height =
-        elements.chartContainer.clientHeight;
-
     chart.applyOptions({
-        width: Math.max(width, 300),
-        height: Math.max(height, 300)
+        width: Math.max(elements.chartContainer.clientWidth, 300),
+        height: Math.max(elements.chartContainer.clientHeight, 300)
     });
 }
 
@@ -253,61 +364,41 @@ function changeChartType(type) {
 }
 
 function updateChartSeries() {
-    if (
-        !chart ||
-        !series
-    ) {
+    console.log("SERIES:", series);
+    console.log("DATA LENGTH:", currentData.length);
+    if (currentData.length > 0) {
+        console.log("FIRST:", currentData[0]);
+        console.log("LAST:", currentData[currentData.length - 1]);
+    }
+
+    if (!chart || !series || !Array.isArray(currentData) || currentData.length === 0) {
+        console.warn("Skipping updateChartSeries: missing chart/series or empty data");
         return;
     }
 
-    if (
-        !Array.isArray(currentData) ||
-        currentData.length === 0
-    ) {
-        return;
-    }
-
-    if (
-        currentChartType === 'line' ||
-        currentChartType === 'area'
-    ) {
-        const chartData =
-            currentData
-                .filter(item =>
-                    Number.isFinite(item.time) &&
-                    Number.isFinite(item.value)
-                )
-                .map(item => ({
-                    time: item.time,
-                    value: item.value
-                }));
-
-        if (chartData.length > 0) {
-            series.setData(chartData);
-            chart.timeScale().fitContent();
+    try {
+        let chartData = [];
+        if (currentChartType === 'line' || currentChartType === 'area') {
+            chartData = currentData.map(item => ({
+                time: item.time,
+                value: Number(item.value)
+            }));
+        } else {
+            chartData = currentData.map(item => ({
+                time: item.time,
+                open: Number(item.open),
+                high: Number(item.high),
+                low: Number(item.low),
+                close: Number(item.close)
+            }));
         }
-    } else {
-        const chartData =
-            currentData
-                .filter(item =>
-                    Number.isFinite(item.time) &&
-                    Number.isFinite(item.open) &&
-                    Number.isFinite(item.high) &&
-                    Number.isFinite(item.low) &&
-                    Number.isFinite(item.close)
-                )
-                .map(item => ({
-                    time: item.time,
-                    open: item.open,
-                    high: item.high,
-                    low: item.low,
-                    close: item.close
-                }));
 
-        if (chartData.length > 0) {
-            series.setData(chartData);
-            chart.timeScale().fitContent();
-        }
+        console.log("Calling series.setData with items:", chartData.length);
+        series.setData(chartData);
+        chart.timeScale().fitContent();
+        console.log("series.setData and fitContent SUCCEEDED!");
+    } catch (err) {
+        console.error("ACTUAL BROWSER EXCEPTION IN setData:", err);
     }
 }
 
@@ -321,67 +412,51 @@ async function loadStockData() {
     currentData = [];
 
     try {
-        const stockId = getStockId();
+        const symbol = elements.stockSelector ? elements.stockSelector.value : 'AAPL';
+        console.log(`Fetching candles for ${symbol}...`);
 
-        console.log(
-            `Loading price history for stock ID: ${stockId}`
-        );
-
-        const response = await fetch(
-            `${API_BASE_URL}/price-history/${stockId}`
-        );
-
+        const response = await fetch(`${API_BASE_URL}/market-data/candles/${symbol}`);
         if (!response.ok) {
-            throw new Error(
-                `Price history API returned ${response.status}`
-            );
+            throw new Error(`Market candle API returned ${response.status}`);
         }
 
         const data = await response.json();
+        console.log('API response length:', Array.isArray(data) ? data.length : 0);
 
-        console.log(
-            'Price history response:',
-            data
-        );
-
-        if (
-            !Array.isArray(data) ||
-            data.length === 0
-        ) {
-            throw new Error(
-                'No price history returned by backend.'
-            );
+        if (!Array.isArray(data) || data.length === 0) {
+            throw new Error('No candle data returned for ' + symbol);
         }
 
-        currentData =
-            normalizePriceHistory(data);
+        const lineData = data.map(item => {
+            let dateStr = item.date;
+            if (typeof dateStr === 'string' && dateStr.includes('T')) {
+                dateStr = dateStr.split('T')[0];
+            }
+            return {
+                time: dateStr,
+                value: Number(item.close),
+                open: Number(item.open),
+                high: Number(item.high),
+                low: Number(item.low),
+                close: Number(item.close)
+            };
+        }).filter(item => item.time && Number.isFinite(item.value));
 
-        if (currentData.length === 0) {
-            throw new Error(
-                'Backend returned price history, but no valid chart points could be extracted.'
-            );
+        const uniqueMap = new Map();
+        lineData.forEach(item => uniqueMap.set(item.time, item));
+        currentData = [...uniqueMap.values()].sort((a, b) => a.time.localeCompare(b.time));
+
+        console.log('Final series points:', currentData.length);
+        if (currentData.length > 0) {
+            console.log('first transformed chart object:', currentData[0]);
+            console.log('last transformed chart object:', currentData[currentData.length - 1]);
         }
-
-        console.log(
-            `Loaded ${currentData.length} chart points.`
-        );
 
         updateChartSeries();
     } catch (error) {
-        console.error(
-            'Price history loading failed:',
-            error
-        );
-
+        console.error('Market candle loading failed:', error);
         currentData = [];
-
-        showError(
-            true,
-            `Unable to load price history: ${
-                error.message ||
-                'Unknown error'
-            }`
-        );
+        showError(true, `Unable to load price action: ${error.message || 'Unknown error'}`);
     } finally {
         if (elements.chartLoader) {
             elements.chartLoader.classList.add('hidden');
@@ -397,34 +472,28 @@ function normalizePriceHistory(data) {
             return;
         }
 
-        const dateObj = parseBackendDate(
-            item.date ??
-            item.timestamp ??
-            item.time
-        );
+        let dateStr = null;
 
-        if (
-            !dateObj ||
-            Number.isNaN(dateObj.getTime())
-        ) {
-            console.warn(
-                'Skipping item with invalid date:',
-                item
+        if (typeof item.date === 'string' && /^\d{4}-\d{2}-\d{2}/.test(item.date)) {
+            dateStr = item.date.substring(0, 10);
+        } else {
+            const dateObj = parseBackendDate(
+                item.date ??
+                item.timestamp ??
+                item.time
             );
-            return;
+
+            if (
+                dateObj &&
+                !Number.isNaN(dateObj.getTime())
+            ) {
+                dateStr = dateObj.toISOString().substring(0, 10);
+            }
         }
 
-        dateObj.setUTCHours(
-            0,
-            0,
-            0,
-            0
-        );
-
-        const time =
-            Math.floor(
-                dateObj.getTime() / 1000
-            );
+        if (!dateStr) {
+            return;
+        }
 
         const close =
             getNumericValue(
@@ -440,10 +509,6 @@ function normalizePriceHistory(data) {
             !Number.isFinite(close) ||
             close <= 0
         ) {
-            console.warn(
-                'Skipping item without valid close/price:',
-                item
-            );
             return;
         }
 
@@ -512,9 +577,9 @@ function normalizePriceHistory(data) {
             );
 
         uniqueData.set(
-            time,
+            dateStr,
             {
-                time,
+                time: dateStr,
                 value: close,
                 open,
                 high,
@@ -524,12 +589,14 @@ function normalizePriceHistory(data) {
         );
     });
 
-    return [
+    const sortedData = [
         ...uniqueData.values()
     ].sort(
         (a, b) =>
-            a.time - b.time
+            a.time.localeCompare(b.time)
     );
+
+    return sortedData;
 }
 
 function getNumericValue(...values) {
@@ -637,9 +704,10 @@ async function loadNews() {
         '<div class="news-loading">Loading latest news...</div>';
 
     try {
+        const stockId = getStockId();
         const response =
             await fetch(
-                `${API_BASE_URL}/news/${getStockId()}`
+                `${API_BASE_URL}/news/${stockId}`
             );
 
         if (!response.ok) {
@@ -672,6 +740,32 @@ async function loadNews() {
     }
 }
 
+function getSource(article) {
+    if (article.source) return cleanText(article.source);
+    if (article.sourceName) return cleanText(article.sourceName);
+    if (article.publisher) return cleanText(article.publisher);
+    if (article.url) {
+        try {
+            const urlObj = new URL(article.url);
+            const host = urlObj.hostname.replace(/^www\./, '');
+            if (host.includes('yahoo')) return 'Yahoo Finance';
+            if (host.includes('bloomberg')) return 'Bloomberg';
+            if (host.includes('reuters')) return 'Reuters';
+            if (host.includes('cnbc')) return 'CNBC';
+            if (host.includes('wsj')) return 'Wall Street Journal';
+            if (host.includes('marketwatch')) return 'MarketWatch';
+            if (host.includes('benzinga')) return 'Benzinga';
+            if (host.includes('fool')) return 'Motley Fool';
+            if (host.includes('seekingalpha')) return 'Seeking Alpha';
+            if (host.includes('investing')) return 'Investing.com';
+            return host;
+        } catch {
+            return 'Market News';
+        }
+    }
+    return 'Market News';
+}
+
 function renderNews(news) {
     const latestNews =
         [...news]
@@ -683,8 +777,7 @@ function renderNews(news) {
                     new Date(
                         a.publishedAt || 0
                     )
-            )
-            .slice(0, 6);
+            );
 
     elements.newsContainer.innerHTML = '';
 
@@ -697,44 +790,35 @@ function renderNews(news) {
         card.className =
             'news-card';
 
-        const title =
+        // Meta (Source • Date)
+        const meta =
             document.createElement(
                 'div'
             );
 
-        title.className =
-            'news-card-title';
+        meta.className =
+            'news-card-meta';
 
-        title.textContent =
-            cleanText(
-                article.title
-            ) ||
-            'Untitled Article';
-
-        const content =
+        const source =
             document.createElement(
-                'div'
+                'span'
             );
 
-        content.className =
-            'news-card-content';
+        source.className =
+            'news-card-source';
 
-        content.textContent =
-            truncateText(
-                cleanText(
-                    article.content
-                ) ||
-                'No description available.',
-                180
-            );
+        source.textContent =
+            getSource(article);
 
-        const footer =
+        const bullet =
             document.createElement(
-                'div'
+                'span'
             );
 
-        footer.className =
-            'news-card-footer';
+        bullet.className =
+            'news-card-bullet';
+
+        bullet.textContent = '•';
 
         const date =
             document.createElement(
@@ -749,7 +833,56 @@ function renderNews(news) {
                 article.publishedAt
             );
 
-        footer.appendChild(date);
+        meta.append(
+            source,
+            bullet,
+            date
+        );
+
+        // Title
+        const title =
+            document.createElement(
+                'div'
+            );
+
+        title.className =
+            'news-card-title';
+
+        title.textContent =
+            cleanText(
+                article.title
+            ) ||
+            'Untitled Article';
+
+        // Description
+        const content =
+            document.createElement(
+                'div'
+            );
+
+        content.className =
+            'news-card-content';
+
+        const rawContent =
+            cleanText(
+                article.content ||
+                article.summary ||
+                article.description
+            );
+
+        content.textContent =
+            rawContent
+                ? truncateText(rawContent, 220)
+                : 'No description available.';
+
+        // Footer
+        const footer =
+            document.createElement(
+                'div'
+            );
+
+        footer.className =
+            'news-card-footer';
 
         if (article.url) {
             const link =
@@ -769,13 +902,14 @@ function renderNews(news) {
             link.rel =
                 'noopener noreferrer';
 
-            link.textContent =
-                'Read Article';
+            link.innerHTML =
+                'Read Article &rarr;';
 
             footer.appendChild(link);
         }
 
         card.append(
+            meta,
             title,
             content,
             footer

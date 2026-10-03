@@ -2,6 +2,7 @@ package com.investment.investment_system.service;
 
 import com.investment.investment_system.dto.PredictionRequestDTO;
 import com.investment.investment_system.dto.PredictionResponseDTO;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -12,8 +13,16 @@ public class MlService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    private final String PREDICT_URL = "http://localhost:8000/predict";
-    private final String SENTIMENT_URL = "http://localhost:8000/sentiment";
+    @Value("${ml.service.url:http://localhost:8000}")
+    private String mlServiceBaseUrl;
+
+    private String getPredictUrl() {
+        return mlServiceBaseUrl + "/predict";
+    }
+
+    private String getSentimentUrl() {
+        return mlServiceBaseUrl + "/sentiment";
+    }
 
     public PredictionResponseDTO getPrediction(
             Long stockId,
@@ -29,7 +38,7 @@ public class MlService {
             request.setNewsContent(newsContent);
 
             return restTemplate.postForObject(
-                    PREDICT_URL,
+                    getPredictUrl(),
                     request,
                     PredictionResponseDTO.class
             );
@@ -57,7 +66,7 @@ public class MlService {
             request.setNewsContent(newsContent);
 
             Map<String, Object> response = restTemplate.postForObject(
-                    SENTIMENT_URL,
+                    getSentimentUrl(),
                     request,
                     Map.class
             );
