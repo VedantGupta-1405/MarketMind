@@ -8,16 +8,28 @@ services:
     plan: starter
     region: oregon
     envVars:
-      - key: SPRING_DATASOURCE_URL
+      - key: SPRING_DATASOURCE_HOST
         fromDatabase:
           name: marketmind-db
-          property: connectionString
-      - key: ML_SERVICE_URL
-        fromService:
-          type: web
-          name: marketmind-ml
           property: host
-          value: http://marketmind-ml:8000
+      - key: SPRING_DATASOURCE_PORT
+        fromDatabase:
+          name: marketmind-db
+          property: port
+      - key: SPRING_DATASOURCE_DATABASE
+        fromDatabase:
+          name: marketmind-db
+          property: database
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: marketmind-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: marketmind-db
+          property: password
+      - key: ML_SERVICE_URL
+        value: http://marketmind-ml:8000
       - key: FINNHUB_API_KEY
         sync: false
 
@@ -37,6 +49,6 @@ services:
 databases:
   - name: marketmind-db
     databaseName: investment_system
-    user: postgres
+    user: marketmind_user
     plan: starter
     region: oregon
