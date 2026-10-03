@@ -5,7 +5,7 @@ services:
     env: docker
     dockerfilePath: ./AI_Investment_System_Backend/Dockerfile
     dockerContext: ./AI_Investment_System_Backend
-    plan: starter
+    plan: free
     region: oregon
     envVars:
       - key: SPRING_DATASOURCE_HOST
@@ -39,7 +39,7 @@ services:
     env: docker
     dockerfilePath: ./ml-service/Dockerfile
     dockerContext: ./ml-service
-    plan: starter
+    plan: free
     region: oregon
     envVars:
       - key: PYTHONUNBUFFERED
@@ -50,5 +50,5 @@ databases:
   - name: marketmind-db
     databaseName: investment_system
     user: marketmind_user
-    plan: starter
+    plan: free
     region: oregon
