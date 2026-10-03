@@ -8,6 +8,7 @@ RUN mvn dependency:go-offline -B
 
 # Build application
 COPY src ./src
+RUN if [ ! -f src/main/resources/application.properties ]; then cp src/main/resources/application.properties.example src/main/resources/application.properties; fi
 RUN mvn clean package -DskipTests
 
 # Stage 2: Lightweight runtime image

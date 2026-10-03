@@ -1,7 +1,7 @@
 spring.application.name=investment-system
 
 # PostgreSQL
-spring.datasource.url=${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/investment_system}
+spring.datasource.url=${SPRING_DATASOURCE_URL:jdbc:postgresql://${SPRING_DATASOURCE_HOST:localhost}:${SPRING_DATASOURCE_PORT:5432}/${SPRING_DATASOURCE_DATABASE:investment_system}}
 spring.datasource.username=${SPRING_DATASOURCE_USERNAME:postgres}
 spring.datasource.password=${SPRING_DATASOURCE_PASSWORD:YOUR_POSTGRES_PASSWORD}
 
