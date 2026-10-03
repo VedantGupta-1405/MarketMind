@@ -1,0 +1,42 @@
+services:
+  # 1. Spring Boot Backend API
+  - type: web
+    name: marketmind-backend
+    env: docker
+    dockerfilePath: ./AI_Investment_System_Backend/Dockerfile
+    dockerContext: ./AI_Investment_System_Backend
+    plan: starter
+    region: oregon
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: marketmind-db
+          property: connectionString
+      - key: ML_SERVICE_URL
+        fromService:
+          type: web
+          name: marketmind-ml
+          property: host
+          value: http://marketmind-ml:8000
+      - key: FINNHUB_API_KEY
+        sync: false
+
+  # 2. FastAPI ML & Sentiment Service
+  - type: web
+    name: marketmind-ml
+    env: docker
+    dockerfilePath: ./ml-service/Dockerfile
+    dockerContext: ./ml-service
+    plan: starter
+    region: oregon
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+
+# 3. PostgreSQL Database
+databases:
+  - name: marketmind-db
+    databaseName: investment_system
+    user: postgres
+    plan: starter
+    region: oregon
