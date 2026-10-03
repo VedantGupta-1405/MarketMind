@@ -1,0 +1,17 @@
+model_name,features_used,full_accuracy,full_balanced_acc,full_auc,full_mcc,selective_15_acc,selective_15_prec,selective_15_sharpe,ticker
+1. Price & Technicals Only (No Sentiment),40,49.9,48.45,0.4677,-0.033,41.89,14.29,-1.97,AAPL
+2. Technicals + Market/Macro (No Sentiment),40,52.95,52.57,0.5282,0.051,51.35,48.28,-0.04,AAPL
+3. Technicals + Basic Sentiment,40,51.32,50.14,0.5006,0.003,48.65,50.0,-0.46,AAPL
+4. Complete Multimodal + Deep FinBERT Sentiment Momentum Engine,40,54.18,53.36,0.549,0.068,58.11,51.61,0.7,AAPL
+1. Price & Technicals Only (No Sentiment),40,45.21,47.92,0.4712,-0.043,55.41,41.3,0.57,GOOGL
+2. Technicals + Market/Macro (No Sentiment),40,43.18,44.48,0.4545,-0.11,48.65,42.22,-0.46,GOOGL
+3. Technicals + Basic Sentiment,40,44.81,46.95,0.4722,-0.062,48.65,30.95,-0.22,GOOGL
+4. Complete Multimodal + Deep FinBERT Sentiment Momentum Engine,40,42.97,44.85,0.4526,-0.104,47.3,22.58,-1.54,GOOGL
+1. Price & Technicals Only (No Sentiment),40,49.29,51.84,0.5302,0.039,68.92,65.22,1.61,MSFT
+2. Technicals + Market/Macro (No Sentiment),40,45.62,48.4,0.5282,-0.034,62.16,63.41,0.72,MSFT
+3. Technicals + Basic Sentiment,40,49.29,51.72,0.5214,0.036,70.27,64.44,1.74,MSFT
+4. Complete Multimodal + Deep FinBERT Sentiment Momentum Engine,40,45.82,48.64,0.5166,-0.029,63.51,69.44,0.75,MSFT
+1. Price & Technicals Only (No Sentiment),40,48.68,49.26,0.4609,-0.015,35.14,34.72,-0.49,AMZN
+2. Technicals + Market/Macro (No Sentiment),40,46.23,46.95,0.4666,-0.062,44.59,43.1,0.24,AMZN
+3. Technicals + Basic Sentiment,40,43.18,43.66,0.4378,-0.128,43.24,44.44,-0.07,AMZN
+4. Complete Multimodal + Deep FinBERT Sentiment Momentum Engine,40,45.21,46.23,0.4502,-0.079,39.19,37.7,-0.23,AMZN

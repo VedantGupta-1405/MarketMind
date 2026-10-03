@@ -129,10 +129,12 @@ class MultimodalFeaturePipeline:
             "Regime_Composite_0", "Regime_Composite_1", "Regime_Composite_2", "Regime_Composite_3"
         ],
         "sentiment": [
-            "Sentiment_Raw_1d", "Sentiment_Pos_1d", "Sentiment_Neg_1d",
-            "Sentiment_EMA_3d", "Sentiment_EMA_7d", "Sentiment_EMA_14d",
-            "Sentiment_Momentum_7d", "Sentiment_Momentum_3d", "Sentiment_Acceleration",
-            "Sentiment_Pos_Neg_Ratio", "News_Volume_Ratio"
+            "Sentiment_Raw_1d", "Sentiment_Pos_1d", "Sentiment_Neg_1d", "Sentiment_Magnitude_1d",
+            "Sentiment_EMA_3d", "Sentiment_EMA_7d", "Sentiment_EMA_14d", "Sentiment_EMA_21d",
+            "Sentiment_Momentum_3d", "Sentiment_Momentum_7d", "Sentiment_Momentum_14d", "Sentiment_Acceleration",
+            "Sentiment_ZScore_20d", "Sentiment_Shock_Bull", "Sentiment_Shock_Bear",
+            "Sentiment_Polarization", "Sentiment_Pos_Neg_Ratio", "Sentiment_Volume_Weighted",
+            "Sentiment_Price_Divergence_5d", "Bullish_Divergence_Flag", "Bearish_Divergence_Flag"
         ]
     }
 

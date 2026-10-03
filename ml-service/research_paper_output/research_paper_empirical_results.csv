@@ -1,0 +1,5 @@
+ticker,stock_id,selected_threshold,full_coverage_accuracy,full_coverage_balanced_acc,full_coverage_roc_auc,full_coverage_mcc,high_conviction_accuracy,high_conviction_balanced_acc,high_conviction_precision,high_conviction_recall,high_conviction_f1,high_conviction_mcc,trade_coverage_pct,trades_count,win_rate_pct,cumulative_pnl_pct,annualized_sharpe,profit_factor
+AAPL,1,0.6,60.69,50.11,0.6177,0.0044,60.69,50.11,0.0,0.0,0.0,0.0,0.0,0,50.0,0.0,0.0,1.0
+GOOGL,4,0.65,54.58,48.07,0.4978,-0.0409,75.0,50.0,0.0,0.0,0.0,0.0,9.78,48,43.75,42.150001525878906,0.86,1.5399999618530273
+MSFT,5,0.65,47.05,52.32,0.5183,0.0485,42.3,49.82,36.29,77.48,49.43,-0.0041,62.12,305,42.3,-103.94000244140625,-0.31,0.8600000143051147
+AMZN,6,0.6,59.06,50.0,0.5238,0.0,60.93,50.0,0.0,0.0,0.0,0.0,43.79,215,48.84,-81.36000061035156,-0.27,0.8700000047683716

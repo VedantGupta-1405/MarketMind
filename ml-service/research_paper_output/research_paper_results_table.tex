@@ -1,0 +1,15 @@
+\begin{table*}[t]
+\centering
+\caption{Out-of-Sample Empirical Performance: Full Coverage vs. High-Conviction Selective Classification (2022--2024)}
+\label{tab:multimodal_results}
+\begin{tabular}{lccccccccccc}
+\hline
+\textbf{Asset} & \textbf{Full Acc (\%)} & \textbf{Full AUC} & \textbf{Threshold ($\tau^*$)} & \textbf{Conviction Acc (\%)} & \textbf{Bal. Acc (\%)} & \textbf{Precision (\%)} & \textbf{MCC} & \textbf{Coverage (\%)} & \textbf{Trades} & \textbf{Sharpe} & \textbf{PF} \\
+\hline
+AAPL & 60.7 & 0.618 & 0.60 & \textbf{60.7\%} & 50.1 & 0.0 & 0.000 & 0.0 & 0 & \textbf{0.00} & 1.00 \\
+GOOGL & 54.6 & 0.498 & 0.65 & \textbf{75.0\%} & 50.0 & 0.0 & 0.000 & 9.8 & 48 & \textbf{0.86} & 1.54 \\
+MSFT & 47.0 & 0.518 & 0.65 & \textbf{42.3\%} & 49.8 & 36.3 & -0.004 & 62.1 & 305 & \textbf{-0.31} & 0.86 \\
+AMZN & 59.1 & 0.524 & 0.60 & \textbf{60.9\%} & 50.0 & 0.0 & 0.000 & 43.8 & 215 & \textbf{-0.27} & 0.87 \\
+\hline
+\end{tabular}
+\end{table*}

@@ -1,0 +1,5 @@
+Asset,Full_Coverage_Acc,Full_Coverage_AUC,Top20_Conviction_Acc,Top20_Sharpe,Top15_Conviction_Acc,Top15_Precision,Top15_Sharpe,Top15_PF,Top10_Conviction_Acc,Top10_Sharpe
+AAPL,48.88,0.4779,46.46,-0.6,44.59,32.35,-0.63,0.73,36.0,-1.76
+GOOGL,43.99,0.4387,53.54,-0.54,55.41,41.86,-0.16,0.92,58.0,-0.15
+MSFT,45.21,0.5243,56.57,-0.16,56.76,48.57,-0.2,0.9,64.0,0.47
+AMZN,43.58,0.4746,50.51,0.23,56.76,57.78,1.04,1.72,62.0,1.69

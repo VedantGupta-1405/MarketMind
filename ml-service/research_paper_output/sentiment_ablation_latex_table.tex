@@ -1,0 +1,27 @@
+\begin{table*}[t]
+\centering
+\caption{Ablation Analysis: Measuring the Incremental Contribution of FinBERT Sentiment Momentum Features (2022--2024)}
+\label{tab:sentiment_ablation}
+\begin{tabular}{llccccc}
+\hline
+\textbf{Asset} & \textbf{Feature Configuration} & \textbf{Features} & \textbf{Full Acc (\%)} & \textbf{Full AUC} & \textbf{Selective Acc (\%)} & \textbf{Sharpe Ratio} \\
+\hline
+AAPL & 1. Price & Technicals Only (No Sentiment) & 40 & 49.9 & 0.468 & 41.9\% & -1.97 \\
+AAPL & 2. Technicals + Market/Macro (No Sentiment) & 40 & 53.0 & 0.528 & 51.4\% & -0.04 \\
+AAPL & 3. Technicals + Basic Sentiment & 40 & 51.3 & 0.501 & 48.6\% & -0.46 \\
+AAPL & 4. Complete Multimodal + Deep FinBERT Sentiment Momentum Engine & 40 & 54.2 & 0.549 & \textbf{58.1\%} & \textbf{0.70} \\
+GOOGL & 1. Price & Technicals Only (No Sentiment) & 40 & 45.2 & 0.471 & 55.4\% & 0.57 \\
+GOOGL & 2. Technicals + Market/Macro (No Sentiment) & 40 & 43.2 & 0.455 & 48.6\% & -0.46 \\
+GOOGL & 3. Technicals + Basic Sentiment & 40 & 44.8 & 0.472 & 48.6\% & -0.22 \\
+GOOGL & 4. Complete Multimodal + Deep FinBERT Sentiment Momentum Engine & 40 & 43.0 & 0.453 & \textbf{47.3\%} & \textbf{-1.54} \\
+MSFT & 1. Price & Technicals Only (No Sentiment) & 40 & 49.3 & 0.530 & 68.9\% & 1.61 \\
+MSFT & 2. Technicals + Market/Macro (No Sentiment) & 40 & 45.6 & 0.528 & 62.2\% & 0.72 \\
+MSFT & 3. Technicals + Basic Sentiment & 40 & 49.3 & 0.521 & 70.3\% & 1.74 \\
+MSFT & 4. Complete Multimodal + Deep FinBERT Sentiment Momentum Engine & 40 & 45.8 & 0.517 & \textbf{63.5\%} & \textbf{0.75} \\
+AMZN & 1. Price & Technicals Only (No Sentiment) & 40 & 48.7 & 0.461 & 35.1\% & -0.49 \\
+AMZN & 2. Technicals + Market/Macro (No Sentiment) & 40 & 46.2 & 0.467 & 44.6\% & 0.24 \\
+AMZN & 3. Technicals + Basic Sentiment & 40 & 43.2 & 0.438 & 43.2\% & -0.07 \\
+AMZN & 4. Complete Multimodal + Deep FinBERT Sentiment Momentum Engine & 40 & 45.2 & 0.450 & \textbf{39.2\%} & \textbf{-0.23} \\
+\hline
+\end{tabular}
+\end{table*}
